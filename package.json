@@ -1,0 +1,19 @@
+{
+  "name": "vue-dragula",
+  "version": "0.0.1",
+  "description": "Vue wrapper for dragula",
+  "main": "vue-dragula.js",
+  "author": "YichangLiu",
+  "license": "MIT",
+  "scripts": {
+    "dev": "webpack --watch example/example.js example/example.build.js",
+    "build": "webpack example/example.js example/example.build.js"
+  },
+  "dependencies": {
+    "dragula": "^3.6.8"
+  },
+  "devDependencies": {
+    "vue": "^1.0.21",
+    "webpack": "^1.12.9"
+  }
+}
