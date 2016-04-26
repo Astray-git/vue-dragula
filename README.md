@@ -3,6 +3,10 @@
 
 > Vue wrapper for dragula
 
+## install
+``` bash
+npm install vue-dragula
+```
 
 ## Setup
 script:

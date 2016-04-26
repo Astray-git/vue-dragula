@@ -1,10 +1,14 @@
 {
   "name": "vue-dragula",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Vue wrapper for dragula",
   "main": "vue-dragula.js",
   "author": "YichangLiu",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Astray-git/vue-dragula.git"
+  },
   "scripts": {
     "dev": "webpack --watch example/example.js example/example.build.js",
     "build": "webpack example/example.js example/example.build.js"
