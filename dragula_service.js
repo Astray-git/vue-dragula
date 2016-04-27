@@ -5,7 +5,9 @@ var dragulaKey = '$$dragula';
 module.exports = {
   find: find,
   add: add,
-  handleModels: handleModels
+  handleModels: handleModels,
+  options: setOptions,
+  destroy: destroy
 };
 
 function domIndexOf (child, parent) {
@@ -97,7 +99,7 @@ function destroy (vm, name) {
   bag.drake.destroy();
 }
 
-function setOptions (scope, name, options) {
-  var bag = add(scope, name, dragula(options));
-  handleModels(scope, bag.drake);
+function setOptions (vm, name, options) {
+  var bag = add(vm, name, dragula(options));
+  handleModels(vm, bag.drake);
 }

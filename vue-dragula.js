@@ -21,6 +21,10 @@
     var name = 'globalBag';
     var drake;
 
+    Vue.vueDragula = {
+      options: dragulaService.options
+    };
+
     Vue.directive('dragula', {
       params: ['bag'],
 
