@@ -47,9 +47,9 @@
 	var Vue = __webpack_require__(1);
 	var VueDragula = __webpack_require__(3);
 
-	Vue.config.debug = true;
+	Vue.config.debug = true
 
-	Vue.use(VueDragula);
+	Vue.use(VueDragula)
 
 	new Vue({
 	  el: '#examples',
@@ -62,18 +62,33 @@
 	    colTwo: [
 	      'This is the default use case. You only need to specify the containers you want to use',
 	      'More interactive use cases lie ahead',
-	      'message3'
+	      'Another message'
 	    ]
+	  },
+	  ready: function () {
+	    var _this = this
+	    Vue.vueDragula.eventBus.$on(
+	      'drop',
+	      function (args) {
+	        console.log('drop: ' + args[0])
+	        console.log(_this.colOne)
+	      }
+	    )
+	    Vue.vueDragula.eventBus.$on(
+	      'dropModel',
+	      function (args) {
+	        console.log('dropModel: ' + args[0])
+	        console.log(_this.colOne)
+	      }
+	    )
 	  },
 	  methods: {
 	    onClick: function () {
-	      window.alert('click event');
+	      window.alert('click event')
 	    }
-	  },
-	  created: function () {
-	    console.log('new');
 	  }
-	});
+	})
+
 
 /***/ },
 /* 1 */
@@ -10105,55 +10120,219 @@
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	;(function () {
-	  'use strict';
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	 * vue-dragula v1.0.0
+	 * (c) 2016 Yichang Liu
+	 * Released under the MIT License.
+	 */
+	(function (global, factory) {
+	   true ? module.exports = factory(__webpack_require__(4)) :
+	  typeof define === 'function' && define.amd ? define(['dragula'], factory) :
+	  (global.vueDragula = factory(global.dragula));
+	}(this, function (dragula) { 'use strict';
 
-	  var vueDragula = {};
-	  var dragulaService = __webpack_require__(4);
-	  var dragula =  true
-	    ? __webpack_require__(5)
-	    : window.dragula
-	  ;
-	  var dragulaKey = '$$dragula';
+	  dragula = 'default' in dragula ? dragula['default'] : dragula;
+
+	  var babelHelpers = {};
+
+	  babelHelpers.classCallCheck = function (instance, Constructor) {
+	    if (!(instance instanceof Constructor)) {
+	      throw new TypeError("Cannot call a class as a function");
+	    }
+	  };
+
+	  babelHelpers.createClass = function () {
+	    function defineProperties(target, props) {
+	      for (var i = 0; i < props.length; i++) {
+	        var descriptor = props[i];
+	        descriptor.enumerable = descriptor.enumerable || false;
+	        descriptor.configurable = true;
+	        if ("value" in descriptor) descriptor.writable = true;
+	        Object.defineProperty(target, descriptor.key, descriptor);
+	      }
+	    }
+
+	    return function (Constructor, protoProps, staticProps) {
+	      if (protoProps) defineProperties(Constructor.prototype, protoProps);
+	      if (staticProps) defineProperties(Constructor, staticProps);
+	      return Constructor;
+	    };
+	  }();
+
+	  babelHelpers;
 
 	  if (!dragula) {
 	    throw new Error('[vue-dragula] cannot locate dragula.');
 	  }
 
-	  // exposed global options
-	  vueDragula.config = {};
+	  var DragulaService = function () {
+	    function DragulaService(Vue) {
+	      babelHelpers.classCallCheck(this, DragulaService);
 
-	  vueDragula.install = function (Vue) {
+	      this.bags = []; // bag store
+	      this.eventBus = new Vue();
+	      this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
+	    }
+
+	    babelHelpers.createClass(DragulaService, [{
+	      key: 'add',
+	      value: function add(name, drake) {
+	        var bag = this.find(name);
+	        if (bag) {
+	          throw new Error('Bag named: "' + name + '" already exists.');
+	        }
+	        bag = {
+	          name: name,
+	          drake: drake
+	        };
+	        this.bags.push(bag);
+	        if (drake.models) {
+	          this.handleModels(name, drake);
+	        }
+	        if (!bag.initEvents) {
+	          this.setupEvents(bag);
+	        }
+	        return bag;
+	      }
+	    }, {
+	      key: 'find',
+	      value: function find(name) {
+	        var bags = this.bags;
+	        for (var i = 0; i < bags.length; i++) {
+	          if (bags[i].name === name) {
+	            return bags[i];
+	          }
+	        }
+	      }
+	    }, {
+	      key: 'handleModels',
+	      value: function handleModels(name, drake) {
+	        var _this2 = this;
+
+	        if (drake.registered) {
+	          // do not register events twice
+	          return;
+	        }
+	        var dragElm = void 0;
+	        var dragIndex = void 0;
+	        var dropIndex = void 0;
+	        var sourceModel = void 0;
+	        drake.on('remove', function (el, source) {
+	          if (!drake.models) {
+	            return;
+	          }
+	          sourceModel = drake.models[drake.containers.indexOf(source)];
+	          sourceModel.splice(dragIndex, 1);
+	          _this2.eventBus.$emit('removeModel', [name, el, source]);
+	        });
+	        drake.on('drag', function (el, source) {
+	          dragElm = el;
+	          dragIndex = _this2.domIndexOf(el, source);
+	        });
+	        drake.on('drop', function (dropElm, target, source) {
+	          if (!drake.models || !target) {
+	            return;
+	          }
+	          dropIndex = _this2.domIndexOf(dropElm, target);
+	          sourceModel = drake.models[drake.containers.indexOf(source)];
+
+	          if (target === source) {
+	            sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0]);
+	          } else {
+	            var notCopy = dragElm === dropElm;
+	            var targetModel = drake.models[drake.containers.indexOf(target)];
+	            var dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]));
+
+	            if (notCopy) {
+	              sourceModel.splice(dragIndex, 1);
+	            }
+	            targetModel.splice(dropIndex, 0, dropElmModel);
+	          }
+	          _this2.eventBus.$emit('dropModel', [name, dropElm, target, source]);
+	        });
+	        drake.registered = true;
+	      }
+	    }, {
+	      key: 'destroy',
+	      value: function destroy(name) {
+	        var bag = this.find(name);
+	        if (!bag) {
+	          return;
+	        }
+	        var bagIndex = this.bag.indexOf(bag);
+	        this.bags.splice(bagIndex, 1);
+	        bag.drake.destroy();
+	      }
+	    }, {
+	      key: 'setOptions',
+	      value: function setOptions(name, options) {
+	        var bag = this.add(name, dragula(options));
+	        this.handleModels(name, bag.drake);
+	      }
+	    }, {
+	      key: 'setupEvents',
+	      value: function setupEvents(bag) {
+	        bag.initEvents = true;
+	        var _this = this;
+	        var emitter = function emitter(type) {
+	          function replicate() {
+	            var args = Array.prototype.slice.call(arguments);
+	            _this.eventBus.$emit(type, [bag.name].concat(args));
+	          }
+	          bag.drake.on(type, replicate);
+	        };
+	        this.events.forEach(emitter);
+	      }
+	    }, {
+	      key: 'domIndexOf',
+	      value: function domIndexOf(child, parent) {
+	        return Array.prototype.indexOf.call(parent.children, child);
+	      }
+	    }]);
+	    return DragulaService;
+	  }();
+
+	  if (!dragula) {
+	    throw new Error('[vue-dragula] cannot locate dragula.');
+	  }
+
+	  function VueDragula (Vue) {
+	    var service = new DragulaService(Vue);
 
 	    var name = 'globalBag';
-	    var drake;
+	    var drake = void 0;
+
+	    Vue.vueDragula = {
+	      options: service.setOptions,
+	      eventBus: service.eventBus
+	    };
 
 	    Vue.directive('dragula', {
 	      params: ['bag'],
 
-	      bind: function () {
-	        var dragulaVm = this.vm;
+	      bind: function bind() {
 	        var container = this.el;
 	        var bagName = this.params.bag;
 	        if (bagName !== undefined && bagName.length !== 0) {
 	          name = bagName;
 	        }
-
-	        var bag = dragulaService.find(dragulaVm, name);
+	        var bag = service.find(name);
 	        if (bag) {
 	          drake = bag.drake;
 	          drake.containers.push(container);
-	        } else {
-	          drake = dragula({
-	            containers: [container]
-	          });
-	          dragulaService.add(dragulaVm, name, drake);
+	          return;
 	        }
-	      },
+	        drake = dragula({
+	          containers: [container]
+	        });
+	        service.add(name, drake);
 
-	      update: function (newValue, oldValue) {
-	        if (!newValue) {return;}
-	        var dragulaVm = this.vm;
+	        service.handleModels(name, drake);
+	      },
+	      update: function update(newValue, oldValue) {
+	        if (!newValue) {
+	          return;
+	        }
 
 	        if (!drake.models) {
 	          drake.models = [newValue];
@@ -10165,146 +10344,47 @@
 	            drake.models.push(newValue);
 	          }
 	        }
-
-	        dragulaService.handleModels.call(this, dragulaVm, drake);
 	      },
-
-	      unbind: function () {
-	        dragulaService.destroy(this.vm, name);
+	      unbind: function unbind() {
+	        service.destroy(name);
 	      }
 	    });
-
-	  };
-
-	  if (true) {
-	    module.exports = vueDragula;
-	  } else if (typeof define === 'function' && define.amd) {
-	    define([], function(){ return vueDragula; });
-	  } else if (window.Vue) {
-	    window.VueDragula = vueDragula;
-	    Vue.use(vueDragula);
 	  }
 
-	})();
+	  function plugin(Vue) {
+	    var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+	    if (plugin.installed) {
+	      console.warn('[vue-dragula] already installed.');
+	    }
+
+	    VueDragula(Vue);
+	  }
+
+	  plugin.version = '1.0.0';
+
+	  if (true) {
+	    // eslint-disable-line
+	    !(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+	      plugin;
+	    }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)); // eslint-disable-line
+	  } else if (window.Vue) {
+	      window.Vue.use(plugin);
+	    }
+
+	  return plugin;
+
+	}));
 
 /***/ },
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	
-	var dragula = __webpack_require__(5);
-	var dragulaKey = '$$dragula';
-
-	module.exports = {
-	  find: find,
-	  add: add,
-	  handleModels: handleModels
-	};
-
-	function domIndexOf (child, parent) {
-	  return Array.prototype.indexOf.call(parent.children, child);
-	}
-
-	function handleModels(vm, drake){
-	  if(drake.registered){ // do not register events twice
-	    return;
-	  }
-	  var dragElm;
-	  var dragIndex;
-	  var dropIndex;
-	  var sourceModel;
-	  var _this = this;
-	  drake.on('remove',function removeModel (el, source) {
-	    if (!drake.models) {
-	      return;
-	    }
-	    sourceModel = drake.models[drake.containers.indexOf(source)];
-	      sourceModel.splice(dragIndex, 1);
-	      drake.emit('remove-model', el, source);
-	  });
-	  drake.on('drag',function dragModel (el, source) {
-	    dragElm = el;
-	    dragIndex = domIndexOf(el, source);
-	  });
-	  drake.on('drop',function dropModel (dropElm, target, source) {
-	    if (!drake.models) {
-	      return;
-	    }
-	    dropIndex = domIndexOf(dropElm, target);
-	    sourceModel = drake.models[drake.containers.indexOf(source)];
-	    if (target === source) {
-	      sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0]);
-	    } else {
-	      var notCopy = dragElm === dropElm;
-	      var targetModel = drake.models[drake.containers.indexOf(target)];
-	      var dropElmModel = notCopy ? sourceModel[dragIndex] : angular.copy(sourceModel[dragIndex]);
-
-	      if (notCopy) {
-	        sourceModel.splice(dragIndex, 1);
-	      }
-	      targetModel.splice(dropIndex, 0, dropElmModel);
-	    }
-	    drake.emit('drop-model', dropElm, target, source);
-	  });
-	  drake.registered = true;
-	}
-
-	function getOrCreateCtx (vm) {
-	  var ctx = vm[dragulaKey];
-	  if (!ctx) {
-	    ctx = vm[dragulaKey] = {
-	      bags: []
-	    };
-	  }
-	  return ctx;
-	}
-
-	function find (vm, name) {
-	  var bags = getOrCreateCtx(vm).bags;
-	  for (var i = 0; i < bags.length; i++) {
-	    if (bags[i].name === name) {
-	      return bags[i];
-	    }
-	  }
-	}
-
-	function add (vm, name, drake) {
-	  var bag = find(vm, name);
-	  if (bag) {
-	    throw new Error('Bag named: "' + name + '" already exists in same vm.');
-	  }
-	  var ctx = getOrCreateCtx(vm);
-	  bag = {
-	    name: name,
-	    drake: drake
-	  };
-	  ctx.bags.push(bag);
-	  return bag;
-	}
-
-	function destroy (vm, name) {
-	  var bags = getOrCreateCtx(vm).bags;
-	  var bag = find(vm, name);
-	  var i = bags.indexOf(bag);
-	  bags.splice(i, 1);
-	  bag.drake.destroy();
-	}
-
-	function setOptions (scope, name, options) {
-	  var bag = add(scope, name, dragula(options));
-	  handleModels(scope, bag.drake);
-	}
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
-	var emitter = __webpack_require__(6);
-	var crossvent = __webpack_require__(11);
-	var classes = __webpack_require__(14);
+	var emitter = __webpack_require__(5);
+	var crossvent = __webpack_require__(10);
+	var classes = __webpack_require__(13);
 	var doc = document;
 	var documentElement = doc.documentElement;
 
@@ -10905,13 +10985,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var atoa = __webpack_require__(7);
-	var debounce = __webpack_require__(8);
+	var atoa = __webpack_require__(6);
+	var debounce = __webpack_require__(7);
 
 	module.exports = function emitter (thing, options) {
 	  var opts = options || {};
@@ -10965,19 +11045,19 @@
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports) {
 
 	module.exports = function atoa (a, n) { return Array.prototype.slice.call(a, n); }
 
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var ticky = __webpack_require__(9);
+	var ticky = __webpack_require__(8);
 
 	module.exports = function debounce (fn, args, ctx) {
 	  if (!fn) { return; }
@@ -10988,7 +11068,7 @@
 
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate) {var si = typeof setImmediate === 'function', tick;
@@ -10999,10 +11079,10 @@
 	}
 
 	module.exports = tick;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).setImmediate))
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(2).nextTick;
@@ -11081,16 +11161,16 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10).setImmediate, __webpack_require__(10).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).setImmediate, __webpack_require__(9).clearImmediate))
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
-	var customEvent = __webpack_require__(12);
-	var eventmap = __webpack_require__(13);
+	var customEvent = __webpack_require__(11);
+	var eventmap = __webpack_require__(12);
 	var doc = global.document;
 	var addEvent = addEventEasy;
 	var removeEvent = removeEventEasy;
@@ -11192,7 +11272,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {
@@ -11247,7 +11327,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
@@ -11267,7 +11347,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';

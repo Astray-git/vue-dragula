@@ -1,9 +1,9 @@
 var Vue = require('vue');
-var VueDragula = require('../vue-dragula');
+var VueDragula = require('../dist/vue-dragula');
 
-Vue.config.debug = true;
+Vue.config.debug = true
 
-Vue.use(VueDragula);
+Vue.use(VueDragula)
 
 new Vue({
   el: '#examples',
@@ -19,12 +19,26 @@ new Vue({
       'Another message'
     ]
   },
+  ready: function () {
+    var _this = this
+    Vue.vueDragula.eventBus.$on(
+      'drop',
+      function (args) {
+        console.log('drop: ' + args[0])
+        console.log(_this.colOne)
+      }
+    )
+    Vue.vueDragula.eventBus.$on(
+      'dropModel',
+      function (args) {
+        console.log('dropModel: ' + args[0])
+        console.log(_this.colOne)
+      }
+    )
+  },
   methods: {
     onClick: function () {
-      window.alert('click event');
+      window.alert('click event')
     }
-  },
-  created: function () {
-    console.log('new');
   }
-});
+})
