@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.0.0
+ * vue-dragula v1.0.1
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -137,7 +137,7 @@
         if (!bag) {
           return;
         }
-        var bagIndex = this.bag.indexOf(bag);
+        var bagIndex = this.bags.indexOf(bag);
         this.bags.splice(bagIndex, 1);
         bag.drake.destroy();
       }

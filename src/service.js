@@ -98,7 +98,7 @@ class DragulaService {
   destroy (name) {
     let bag = this.find(name)
     if (!bag) { return }
-    let bagIndex = this.bag.indexOf(bag)
+    let bagIndex = this.bags.indexOf(bag)
     this.bags.splice(bagIndex, 1)
     bag.drake.destroy()
   }
