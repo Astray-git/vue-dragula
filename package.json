@@ -1,11 +1,12 @@
 {
   "name": "vue-dragula",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Vue wrapper for dragula",
   "main": "dist/vue-dragula.js",
   "files": [
     "dist",
-    "src"
+    "src",
+    "styles"
   ],
   "author": "YichangLiu",
   "license": "MIT",
