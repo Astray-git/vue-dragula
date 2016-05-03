@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.0.1
+ * vue-dragula v1.0.2
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -181,7 +181,7 @@
     var drake = void 0;
 
     Vue.vueDragula = {
-      options: service.setOptions,
+      options: service.setOptions.bind(service),
       eventBus: service.eventBus
     };
 

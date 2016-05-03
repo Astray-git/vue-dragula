@@ -10121,7 +10121,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	 * vue-dragula v1.0.0
+	 * vue-dragula v1.0.2
 	 * (c) 2016 Yichang Liu
 	 * Released under the MIT License.
 	 */
@@ -10259,7 +10259,7 @@
 	        if (!bag) {
 	          return;
 	        }
-	        var bagIndex = this.bag.indexOf(bag);
+	        var bagIndex = this.bags.indexOf(bag);
 	        this.bags.splice(bagIndex, 1);
 	        bag.drake.destroy();
 	      }
@@ -10303,7 +10303,7 @@
 	    var drake = void 0;
 
 	    Vue.vueDragula = {
-	      options: service.setOptions,
+	      options: service.setOptions.bind(service),
 	      eventBus: service.eventBus
 	    };
 

@@ -12,7 +12,7 @@ export default function (Vue) {
   let drake
 
   Vue.vueDragula = {
-    options: service.setOptions,
+    options: service.setOptions.bind(service),
     eventBus: service.eventBus
   }
 
