@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.0.2
+ * vue-dragula v1.0.3
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
