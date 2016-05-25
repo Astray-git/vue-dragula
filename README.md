@@ -37,7 +37,7 @@ Set dragula options, refer to: https://github.com/bevacqua/dragula#optionscontai
 new Vue({
   ...
   created: function () {
-    Vue.VueDragula.options('my-bag', {
+    Vue.vueDragula.options('my-bag', {
       direction: 'vertical'
     })
   }
