@@ -1,7 +1,7 @@
 # vue-dragula
-:ok_hand: Drag and drop so simple it hurts
+> :ok_hand: Drag and drop so simple it hurts
 
-> Vue wrapper for dragula
+Vue wrapper for [`dragula`][1].
 
 ## install
 ``` bash
@@ -66,3 +66,5 @@ new Vue({
 | :-------------: |:-------------:| -----|
 | dropModel | bagName, el, target, source | same as normal drop, but model was synced |
 | removeModel | bagName, el, container | same as normal remove, but model was synced |
+
+[1]: https://github.com/bevacqua/dragula
