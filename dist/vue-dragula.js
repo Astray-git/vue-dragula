@@ -224,7 +224,23 @@
         }
       },
       unbind: function unbind() {
-        service.destroy(name);
+        var container = this.el;
+        var unbindBagName = 'globalBag';
+        var bagName = this.params.bag;
+        if (bagName !== undefined && bagName.length !== 0) {
+          unbindBagName = bagName;
+        }
+        var drake = service.find(unbindBagName).drake;
+        if (!drake) {
+          return;
+        }
+        var containerIndex = drake.containers.indexOf(container);
+        if (containerIndex > -1) {
+          drake.containers.splice(containerIndex, 1);
+        }
+        if (drake.containers.length === 0) {
+          service.destroy(unbindBagName);
+        }
       }
     });
   }
