@@ -6,7 +6,7 @@ if (!dragula) {
 }
 
 export default function (Vue) {
-  let service = new DragulaService(Vue)
+  const service = new DragulaService(Vue)
 
   let name = 'globalBag'
   let drake
@@ -20,12 +20,12 @@ export default function (Vue) {
     params: ['bag'],
 
     bind () {
-      let container = this.el
-      let bagName = this.params.bag
+      const container = this.el
+      const bagName = this.params.bag
       if (bagName !== undefined && bagName.length !== 0) {
         name = bagName
       }
-      let bag = service.find(name)
+      const bag = service.find(name)
       if (bag) {
         drake = bag.drake
         drake.containers.push(container)
@@ -57,7 +57,21 @@ export default function (Vue) {
     },
 
     unbind () {
-      service.destroy(name)
+      const container = this.el
+      let unbindBagName = 'globalBag'
+      const bagName = this.params.bag
+      if (bagName !== undefined && bagName.length !== 0) {
+        unbindBagName = bagName
+      }
+      var drake = service.find(unbindBagName).drake
+      if (!drake) { return }
+      var containerIndex = drake.containers.indexOf(container)
+      if (containerIndex > -1) {
+        drake.containers.splice(containerIndex, 1)
+      }
+      if (drake.containers.length === 0) {
+        service.destroy(unbindBagName)
+      }
     }
 
   })
