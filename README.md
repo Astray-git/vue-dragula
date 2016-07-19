@@ -37,7 +37,7 @@ Set dragula options, refer to: https://github.com/bevacqua/dragula#optionscontai
 new Vue({
   ...
   created: function () {
-    Vue.vueDragula.options('my-bag', {
+    Vue.dragula.options('my-bag', {
       direction: 'vertical'
     })
   }
@@ -52,7 +52,7 @@ For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
 ...
 new Vue({
   ready: function () {
-    Vue.vueDragula.eventBus.$on('drop', function (args) {
+    Vue.dragula.eventBus.$on('drop', function (args) {
       console.log('drop: ' + args[0])
     })
   }
