@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.0.3
+ * vue-dragula v1.0.4
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -11,15 +11,13 @@
 
   dragula = 'default' in dragula ? dragula['default'] : dragula;
 
-  var babelHelpers = {};
-
-  babelHelpers.classCallCheck = function (instance, Constructor) {
+  var classCallCheck = function (instance, Constructor) {
     if (!(instance instanceof Constructor)) {
       throw new TypeError("Cannot call a class as a function");
     }
   };
 
-  babelHelpers.createClass = function () {
+  var createClass = function () {
     function defineProperties(target, props) {
       for (var i = 0; i < props.length; i++) {
         var descriptor = props[i];
@@ -37,22 +35,20 @@
     };
   }();
 
-  babelHelpers;
-
   if (!dragula) {
     throw new Error('[vue-dragula] cannot locate dragula.');
   }
 
   var DragulaService = function () {
     function DragulaService(Vue) {
-      babelHelpers.classCallCheck(this, DragulaService);
+      classCallCheck(this, DragulaService);
 
       this.bags = []; // bag store
       this.eventBus = new Vue();
       this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
     }
 
-    babelHelpers.createClass(DragulaService, [{
+    createClass(DragulaService, [{
       key: 'add',
       value: function add(name, drake) {
         var bag = this.find(name);
@@ -180,7 +176,7 @@
     var name = 'globalBag';
     var drake = void 0;
 
-    Vue.vueDragula = {
+    Vue.dragula = {
       options: service.setOptions.bind(service),
       eventBus: service.eventBus
     };
@@ -263,8 +259,8 @@
       plugin;
     }); // eslint-disable-line
   } else if (window.Vue) {
-      window.Vue.use(plugin);
-    }
+    window.Vue.use(plugin);
+  }
 
   return plugin;
 

@@ -21,14 +21,14 @@ new Vue({
   },
   ready: function () {
     var _this = this
-    Vue.vueDragula.eventBus.$on(
+    Vue.dragula.eventBus.$on(
       'drop',
       function (args) {
         console.log('drop: ' + args[0])
         console.log(_this.colOne)
       }
     )
-    Vue.vueDragula.eventBus.$on(
+    Vue.dragula.eventBus.$on(
       'dropModel',
       function (args) {
         console.log('dropModel: ' + args[0])
