@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.0.3
+ * vue-dragula v1.0.5
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -95,12 +95,13 @@
         var dragIndex = void 0;
         var dropIndex = void 0;
         var sourceModel = void 0;
-        drake.on('remove', function (el, source) {
+        drake.on('remove', function (el, container, source) {
           if (!drake.models) {
             return;
           }
           sourceModel = drake.models[drake.containers.indexOf(source)];
           sourceModel.splice(dragIndex, 1);
+          drake.cancel(true);
           _this2.eventBus.$emit('removeModel', [name, el, source]);
         });
         drake.on('drag', function (el, source) {
@@ -125,6 +126,7 @@
               sourceModel.splice(dragIndex, 1);
             }
             targetModel.splice(dropIndex, 0, dropElmModel);
+            drake.cancel(true);
           }
           _this2.eventBus.$emit('dropModel', [name, dropElm, target, source]);
         });
