@@ -59,12 +59,13 @@ class DragulaService {
     let dragIndex
     let dropIndex
     let sourceModel
-    drake.on('remove', (el, source) => {
+    drake.on('remove', (el, container, source) => {
       if (!drake.models) {
         return
       }
       sourceModel = drake.models[drake.containers.indexOf(source)]
       sourceModel.splice(dragIndex, 1)
+      drake.cancel(true)
       this.eventBus.$emit('removeModel', [name, el, source])
     })
     drake.on('drag', (el, source) => {
@@ -89,6 +90,7 @@ class DragulaService {
           sourceModel.splice(dragIndex, 1)
         }
         targetModel.splice(dropIndex, 0, dropElmModel)
+        drake.cancel(true)
       }
       this.eventBus.$emit('dropModel', [name, dropElm, target, source])
     })
