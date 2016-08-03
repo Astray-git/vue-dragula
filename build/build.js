@@ -4,6 +4,8 @@ var fs = require('fs')
 var rollup = require('rollup')
 var uglify = require('uglify-js')
 var babel = require('rollup-plugin-babel')
+var nodeResolve = require('rollup-plugin-node-resolve')
+var commonjs = require('rollup-plugin-commonjs')
 var version = process.env.VERSION || require('../package.json').version
 
 var banner =
@@ -15,17 +17,17 @@ var banner =
 
 rollup.rollup({
   entry: 'src/index.js',
-  external: ['dragula'],
-  plugins: [babel()]
+  plugins: [
+    nodeResolve(),
+    commonjs(),
+    babel()
+  ]
 })
 .then(function (bundle) {
   var code = bundle.generate({
     format: 'umd',
     banner: banner,
-    moduleName: 'vueDragula',
-    globals: {
-      dragula: 'dragula'
-    }
+    moduleName: 'vueDragula'
   }).code
   return write('dist/vue-dragula.js', code).then(function () {
     return code
