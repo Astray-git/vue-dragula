@@ -13,6 +13,7 @@ export default function (Vue) {
 
   Vue.vueDragula = {
     options: service.setOptions.bind(service),
+    find: service.find.bind(service),
     eventBus: service.eventBus
   }
 

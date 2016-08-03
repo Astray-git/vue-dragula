@@ -30,7 +30,12 @@ template:
 </div>
 ```
 
-## Options
+## APIs
+
+You can access them from `Vue.vueDragula`
+
+### `options(name, options)`
+
 Set dragula options, refer to: https://github.com/bevacqua/dragula#optionscontainers
 ```js
 ...
@@ -43,6 +48,13 @@ new Vue({
   }
 })
 ```
+
+### `find(name)`
+
+Returns the `bag` for a `drake` instance. Contains the following properties:
+
+- `name` the name that identifies the bag
+- `drake` the raw `drake` instance
 
 ## Events
 For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
