@@ -44,16 +44,18 @@ export default function (Vue) {
       if (!newValue) { return }
 
       if (!drake.models) {
-        drake.models = [newValue]
+        drake.models = []
+      }
+
+      let modelContainer = service.findModelContainerByContainer(this.el, drake)
+
+      if (modelContainer) {
+        modelContainer.model = newValue
       } else {
-        let modelIndex = oldValue
-          ? drake.models.indexOf(oldValue)
-          : -1
-        if (modelIndex >= 0) {
-          drake.models.splice(modelIndex, 1, newValue)
-        } else {
-          drake.models.push(newValue)
-        }
+        drake.models.push({
+          model: newValue,
+          container: this.el
+        })
       }
     },
 

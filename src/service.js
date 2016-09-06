@@ -63,7 +63,7 @@ class DragulaService {
       if (!drake.models) {
         return
       }
-      sourceModel = drake.models[drake.containers.indexOf(source)]
+      sourceModel = this.findModelForContainer(source, drake)
       sourceModel.splice(dragIndex, 1)
       drake.cancel(true)
       this.eventBus.$emit('removeModel', [name, el, source])
@@ -77,13 +77,13 @@ class DragulaService {
         return
       }
       dropIndex = this.domIndexOf(dropElm, target)
-      sourceModel = drake.models[drake.containers.indexOf(source)]
+      sourceModel = this.findModelForContainer(source, drake)
 
       if (target === source) {
         sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0])
       } else {
         let notCopy = dragElm === dropElm
-        let targetModel = drake.models[drake.containers.indexOf(target)]
+        let targetModel = this.findModelForContainer(target, drake)
         let dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]))
 
         if (notCopy) {
@@ -128,6 +128,17 @@ class DragulaService {
       parent.children,
       child
     )
+  }
+
+  findModelForContainer (container, drake) {
+    return (this.findModelContainerByContainer(container, drake) || {}).model
+  }
+
+  findModelContainerByContainer (container, drake) {
+    if (!drake.models) {
+      return
+    }
+    return drake.models.find(model => model.container === container)
   }
 }
 
