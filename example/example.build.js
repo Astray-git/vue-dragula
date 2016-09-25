@@ -11508,7 +11508,10 @@
 		      if (modelContainer) {
 		        modelContainer.model = newValue;
 		      } else {
-		        drake.models.push({ model: newValue, container: this.el });
+		        drake.models.push({
+		          model: newValue,
+		          container: this.el
+		        });
 		      }
 		    },
 		    unbind: function unbind() {
