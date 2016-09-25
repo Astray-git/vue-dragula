@@ -10,11 +10,6 @@
 }(this, function () { 'use strict';
 
 	var babelHelpers = {};
-	babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-	  return typeof obj;
-	} : function (obj) {
-	  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-	};
 
 	babelHelpers.classCallCheck = function (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
@@ -71,7 +66,7 @@ var require$$1 = Object.freeze({
 	    tick = function tick(fn) {
 	      setImmediate(fn);
 	    };
-	  } else if ((typeof process === 'undefined' ? 'undefined' : babelHelpers.typeof(process)) !== undef && process.nextTick) {
+	  } else if (typeof process !== 'undefined' && process.nextTick) {
 	    tick = process.nextTick;
 	  } else {
 	    tick = function tick(fn) {
@@ -501,6 +496,7 @@ var require$$0$3 = Object.freeze({
 	      cancel: cancel,
 	      remove: remove,
 	      destroy: destroy,
+	      canMove: canMove,
 	      dragging: false
 	    });
 
@@ -641,6 +637,10 @@ var require$$0$3 = Object.freeze({
 	      };
 	    }
 
+	    function canMove(item) {
+	      return !!canStart(item);
+	    }
+
 	    function manualStart(item) {
 	      var context = canStart(item);
 	      if (context) {
@@ -736,7 +736,9 @@ var require$$0$3 = Object.freeze({
 	      var initial = isInitialPlacement(parent);
 	      if (initial === false && reverts) {
 	        if (_copy) {
-	          parent.removeChild(_copy);
+	          if (parent) {
+	            parent.removeChild(_copy);
+	          }
 	        } else {
 	          _source.insertBefore(item, _initialSibling);
 	        }
