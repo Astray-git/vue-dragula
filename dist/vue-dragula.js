@@ -10,11 +10,6 @@
 }(this, function () { 'use strict';
 
 	var babelHelpers = {};
-	babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-	  return typeof obj;
-	} : function (obj) {
-	  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-	};
 
 	babelHelpers.classCallCheck = function (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
@@ -42,10 +37,10 @@
 
 	babelHelpers;
 
-	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
 
 	function interopDefault(ex) {
-		return ex && (typeof ex === 'undefined' ? 'undefined' : babelHelpers.typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
+		return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
 	}
 
 	function createCommonjsModule(fn, module) {
@@ -565,8 +560,8 @@ var require$$0$3 = Object.freeze({
 	          // see also: https://github.com/bevacqua/dragula/issues/208
 	          item.focus(); // fixes https://github.com/bevacqua/dragula/issues/176
 	        } else {
-	            e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
-	          }
+	          e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
+	        }
 	      }
 	    }
 
@@ -741,7 +736,9 @@ var require$$0$3 = Object.freeze({
 	      var initial = isInitialPlacement(parent);
 	      if (initial === false && reverts) {
 	        if (_copy) {
-	          parent.removeChild(_copy);
+	          if (parent) {
+	            parent.removeChild(_copy);
+	          }
 	        } else {
 	          _source.insertBefore(item, _initialSibling);
 	        }
@@ -1162,7 +1159,7 @@ var require$$0$3 = Object.freeze({
 	        if (!drake.models) {
 	          return;
 	        }
-	        sourceModel = drake.models[drake.containers.indexOf(source)];
+	        sourceModel = _this2.findModelForContainer(source, drake);
 	        sourceModel.splice(dragIndex, 1);
 	        drake.cancel(true);
 	        _this2.eventBus.$emit('removeModel', [name, el, source]);
@@ -1176,13 +1173,13 @@ var require$$0$3 = Object.freeze({
 	          return;
 	        }
 	        dropIndex = _this2.domIndexOf(dropElm, target);
-	        sourceModel = drake.models[drake.containers.indexOf(source)];
+	        sourceModel = _this2.findModelForContainer(source, drake);
 
 	        if (target === source) {
 	          sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0]);
 	        } else {
 	          var notCopy = dragElm === dropElm;
-	          var targetModel = drake.models[drake.containers.indexOf(target)];
+	          var targetModel = _this2.findModelForContainer(target, drake);
 	          var dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]));
 
 	          if (notCopy) {
@@ -1230,6 +1227,21 @@ var require$$0$3 = Object.freeze({
 	    key: 'domIndexOf',
 	    value: function domIndexOf(child, parent) {
 	      return Array.prototype.indexOf.call(parent.children, child);
+	    }
+	  }, {
+	    key: 'findModelForContainer',
+	    value: function findModelForContainer(container, drake) {
+	      return (this.findModelContainerByContainer(container, drake) || {}).model;
+	    }
+	  }, {
+	    key: 'findModelContainerByContainer',
+	    value: function findModelContainerByContainer(container, drake) {
+	      if (!drake.models) {
+	        return;
+	      }
+	      return drake.models.find(function (model) {
+	        return model.container === container;
+	      });
 	    }
 	  }]);
 	  return DragulaService;
@@ -1279,14 +1291,18 @@ var require$$0$3 = Object.freeze({
 	      }
 
 	      if (!drake.models) {
-	        drake.models = [newValue];
+	        drake.models = [];
+	      }
+
+	      var modelContainer = service.findModelContainerByContainer(this.el, drake);
+
+	      if (modelContainer) {
+	        modelContainer.model = newValue;
 	      } else {
-	        var modelIndex = oldValue ? drake.models.indexOf(oldValue) : -1;
-	        if (modelIndex >= 0) {
-	          drake.models.splice(modelIndex, 1, newValue);
-	        } else {
-	          drake.models.push(newValue);
-	        }
+	        drake.models.push({
+	          model: newValue,
+	          container: this.el
+	        });
 	      }
 	    },
 	    unbind: function unbind() {
@@ -1329,8 +1345,8 @@ var require$$0$3 = Object.freeze({
 	    plugin;
 	  }); // eslint-disable-line
 	} else if (window.Vue) {
-	    window.Vue.use(plugin);
-	  }
+	  window.Vue.use(plugin);
+	}
 
 	return plugin;
 
