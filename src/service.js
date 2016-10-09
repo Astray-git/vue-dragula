@@ -105,7 +105,7 @@ class DragulaService {
         targetModel.splice(dropIndex, 0, dropElmModel)
         drake.cancel(true)
       }
-      this.eventBus.$emit('dropModel', [name, dropElm, target, source])
+      this.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex])
     })
     drake.registered = true
   }
