@@ -20,9 +20,8 @@ export default function (Vue) {
   Vue.directive('dragula', {
     params: ['bag'],
 
-    bind () {
-      const container = this.el
-      const bagName = this.params.bag
+    bind (container, binding, vnode) {
+      const bagName = vnode.data.attrs.bag
       if (bagName !== undefined && bagName.length !== 0) {
         name = bagName
       }
@@ -40,10 +39,11 @@ export default function (Vue) {
       service.handleModels(name, drake)
     },
 
-    update (newValue, oldValue) {
+    update (container, binding, vnode, oldVnode) {
+      const {value: newValue} = binding
       if (!newValue) { return }
 
-      const bagName = this.params.bag
+      const bagName = vnode.data.attrs.bag
       if (bagName !== undefined && bagName.length !== 0) {
         name = bagName
       }
@@ -53,22 +53,21 @@ export default function (Vue) {
         drake.models = []
       }
 
-      let modelContainer = service.findModelContainerByContainer(this.el, drake)
+      let modelContainer = service.findModelContainerByContainer(vnode.elm, drake)
 
       if (modelContainer) {
         modelContainer.model = newValue
       } else {
         drake.models.push({
           model: newValue,
-          container: this.el
+          container: vnode.elm
         })
       }
     },
 
-    unbind () {
-      const container = this.el
+    unbind (container, binding, vnode) {
       let unbindBagName = 'globalBag'
-      const bagName = this.params.bag
+      const bagName = vnode.data.attrs.bag
       if (bagName !== undefined && bagName.length !== 0) {
         unbindBagName = bagName
       }
