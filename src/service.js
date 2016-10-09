@@ -4,6 +4,17 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
+const raf = window.requestAnimationFrame
+const waitForTransition = raf
+  ? function (fn) {
+    raf(() => {
+      raf(fn)
+    })
+  }
+  : function (fn) {
+    window.setTimeout(fn, 50)
+  }
+
 class DragulaService {
   constructor (Vue) {
     this.bags = [] // bag store
@@ -87,7 +98,9 @@ class DragulaService {
         let dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]))
 
         if (notCopy) {
-          sourceModel.splice(dragIndex, 1)
+          waitForTransition(() => {
+            sourceModel.splice(dragIndex, 1)
+          })
         }
         targetModel.splice(dropIndex, 0, dropElmModel)
         drake.cancel(true)
