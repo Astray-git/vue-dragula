@@ -52,7 +52,7 @@
 	Vue.use(VueDragula)
 
 	new Vue({
-	  el: '#examples',
+	  el: 'body',
 	  data: {
 	    colOne: [
 	      'You can move these elements between these two containers',
@@ -67,16 +67,19 @@
 	    categories: [
 	      [1, 2, 3],
 	      [4, 5, 6]
+	    ],
+	    copyOne: [
+	      'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.',
+	      'Aenean commodo ligula eget dolor. Aenean massa.'
+	    ],
+	    copyTwo: [
+	      'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.',
+	      'Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.'
 	    ]
 	  },
 	  created: function () {
-	    var filterContainer = this.$els.filter
-	    Vue.vueDragula.options('first-bag', {
-	      copy: function () {
-	        console.log(filterContainer)
-	        return true
-	      },
-	      removeOnSpill: true
+	    Vue.vueDragula.options('third-bag', {
+	      copy: true
 	    })
 	  },
 	  ready: function () {
@@ -101,21 +104,11 @@
 	      console.log(Vue.vueDragula.find('first-bag'))
 	      window.alert('click event')
 	    },
-	    test: function () {
-	      // this.categories = []
-	      // this.$nextTick(function () {
-	      //   this.categories = [
-	      //     ['a', 'b', 'c'],
-	      //     ['d', 'e', 'f']
-	      //   ]
-	      // })
-	      // this.categories = [
-	      //   ['a', 'b', 'c'],
-	      //   ['d', 'e', 'f']
-	      // ]
-	      var sec = this.categories[1]
-	      sec.splice(sec.length - 1, 1)
-	      //this.categories[0].push(this.categories[1][])
+	    testModify: function () {
+	      this.categories = [
+	        ['a', 'b', 'c'],
+	        ['d', 'e', 'f']
+	      ]
 	    }
 	  }
 	})
@@ -11357,7 +11350,7 @@
 		          targetModel.splice(dropIndex, 0, dropElmModel);
 		          drake.cancel(true);
 		        }
-		        _this2.eventBus.$emit('dropModel', [name, dropElm, dropIndex, target, source]);
+		        _this2.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex]);
 		      });
 		      drake.registered = true;
 		    }
