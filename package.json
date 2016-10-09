@@ -40,7 +40,7 @@
     "rollup-plugin-commonjs": "^3.3.1",
     "rollup-plugin-node-resolve": "^2.0.0",
     "uglify-js": "^2.6.2",
-    "vue": "^2.0.0",
+    "vue": "^1.0.21 || ^2.0.0",
     "webpack": "^1.12.9"
   }
 }

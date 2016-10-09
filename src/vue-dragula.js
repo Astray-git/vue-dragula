@@ -21,7 +21,12 @@ export default function (Vue) {
     params: ['bag'],
 
     bind (container, binding, vnode) {
-      const bagName = vnode.data.attrs.bag
+      const bagName = vnode
+        ? vnode.data.attrs.bag // Vue 2
+        : this.params.bag // Vue 1
+      if (!vnode) {
+        container = this.el // Vue 1
+      }
       if (bagName !== undefined && bagName.length !== 0) {
         name = bagName
       }
@@ -40,10 +45,14 @@ export default function (Vue) {
     },
 
     update (container, binding, vnode, oldVnode) {
-      const {value: newValue} = binding
+      const newValue = vnode
+        ? binding.value // Vue 2
+        : container // Vue 1
       if (!newValue) { return }
 
-      const bagName = vnode.data.attrs.bag
+      const bagName = vnode
+        ? vnode.data.attrs.bag  // Vue 2
+        : this.params.bag // Vue 1
       if (bagName !== undefined && bagName.length !== 0) {
         name = bagName
       }
@@ -53,21 +62,26 @@ export default function (Vue) {
         drake.models = []
       }
 
-      let modelContainer = service.findModelContainerByContainer(vnode.elm, drake)
+      if (!vnode) {
+        container = this.el // Vue 1
+      }
+      let modelContainer = service.findModelContainerByContainer(container, drake)
 
       if (modelContainer) {
         modelContainer.model = newValue
       } else {
         drake.models.push({
           model: newValue,
-          container: vnode.elm
+          container: container
         })
       }
     },
 
     unbind (container, binding, vnode) {
       let unbindBagName = 'globalBag'
-      const bagName = vnode.data.attrs.bag
+      const bagName = vnode
+        ? vnode.data.attrs.bag // Vue 2
+        : this.params.bag // Vue 1
       if (bagName !== undefined && bagName.length !== 0) {
         unbindBagName = bagName
       }
