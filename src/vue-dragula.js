@@ -43,6 +43,12 @@ export default function (Vue) {
     update (newValue, oldValue) {
       if (!newValue) { return }
 
+      const bagName = this.params.bag
+      if (bagName !== undefined && bagName.length !== 0) {
+        name = bagName
+      }
+      const bag = service.find(name)
+      drake = bag.drake
       if (!drake.models) {
         drake.models = []
       }
