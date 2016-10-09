@@ -23,13 +23,19 @@
     <div class="parent">
       <label for="hy">Move stuff between these two containers. Note how the stuff gets inserted near the mouse pointer? Great stuff.</label>
       <div class="wrapper">
-        <div class="container" v-dragula="colOne" bag="first-bag">
+        <div class="container" v-el:filters v-dragula="colOne" bag="first-bag">
           <div v-for="text in colOne" @click="onClick">{{text}} [click me]</div>
         </div>
         <div class="container" v-dragula="colTwo" bag="first-bag">
           <div v-for="text in colTwo">{{text}}</div>
         </div>
       </div>
+      <div class="wrapper" v-for="container in categories">
+        <div class="container" v-dragula="container" bag="second-bag">
+          <div v-for="number in container" transition="scale">{{number}}</div>
+        </div>
+      </div>
+      <button @click="test">test</button>
       <pre>
         <code>
           &lt;div v-dragula=&quot;colOne&quot; bag=&quot;first-bag&quot;&gt;&lt;/div&gt;

@@ -44,8 +44,8 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Vue = __webpack_require__(1);
-	var VueDragula = __webpack_require__(3);
+	var Vue = __webpack_require__(1)
+	var VueDragula = __webpack_require__(3)
 
 	Vue.config.debug = true
 
@@ -63,7 +63,21 @@
 	      'This is the default use case. You only need to specify the containers you want to use',
 	      'More interactive use cases lie ahead',
 	      'Another message'
+	    ],
+	    categories: [
+	      [1, 2, 3],
+	      [4, 5, 6]
 	    ]
+	  },
+	  created: function () {
+	    var filterContainer = this.$els.filter
+	    Vue.vueDragula.options('first-bag', {
+	      copy: function () {
+	        console.log(filterContainer)
+	        return true
+	      },
+	      removeOnSpill: true
+	    })
 	  },
 	  ready: function () {
 	    var _this = this
@@ -71,20 +85,37 @@
 	      'drop',
 	      function (args) {
 	        console.log('drop: ' + args[0])
-	        console.log(_this.colOne)
+	        console.log(_this.categories)
 	      }
 	    )
 	    Vue.vueDragula.eventBus.$on(
 	      'dropModel',
 	      function (args) {
-	        console.log('dropModel: ' + args[0])
-	        console.log(_this.colOne)
+	        console.log('dropModel: ' + args)
+	        console.log(_this.categories)
 	      }
 	    )
 	  },
 	  methods: {
 	    onClick: function () {
+	      console.log(Vue.vueDragula.find('first-bag'))
 	      window.alert('click event')
+	    },
+	    test: function () {
+	      // this.categories = []
+	      // this.$nextTick(function () {
+	      //   this.categories = [
+	      //     ['a', 'b', 'c'],
+	      //     ['d', 'e', 'f']
+	      //   ]
+	      // })
+	      // this.categories = [
+	      //   ['a', 'b', 'c'],
+	      //   ['d', 'e', 'f']
+	      // ]
+	      var sec = this.categories[1]
+	      sec.splice(sec.length - 1, 1)
+	      //this.categories[0].push(this.categories[1][])
 	    }
 	  }
 	})
@@ -10024,103 +10055,14 @@
 /***/ function(module, exports) {
 
 	// shim for using process in browser
+
 	var process = module.exports = {};
-
-	// cached from whatever global is present so that test runners that stub it
-	// don't break things.  But we need to wrap it in a try catch in case it is
-	// wrapped in strict mode code which doesn't define any globals.  It's inside a
-	// function because try/catches deoptimize in certain engines.
-
-	var cachedSetTimeout;
-	var cachedClearTimeout;
-
-	function defaultSetTimout() {
-	    throw new Error('setTimeout has not been defined');
-	}
-	function defaultClearTimeout () {
-	    throw new Error('clearTimeout has not been defined');
-	}
-	(function () {
-	    try {
-	        if (typeof setTimeout === 'function') {
-	            cachedSetTimeout = setTimeout;
-	        } else {
-	            cachedSetTimeout = defaultSetTimout;
-	        }
-	    } catch (e) {
-	        cachedSetTimeout = defaultSetTimout;
-	    }
-	    try {
-	        if (typeof clearTimeout === 'function') {
-	            cachedClearTimeout = clearTimeout;
-	        } else {
-	            cachedClearTimeout = defaultClearTimeout;
-	        }
-	    } catch (e) {
-	        cachedClearTimeout = defaultClearTimeout;
-	    }
-	} ())
-	function runTimeout(fun) {
-	    if (cachedSetTimeout === setTimeout) {
-	        //normal enviroments in sane situations
-	        return setTimeout(fun, 0);
-	    }
-	    // if setTimeout wasn't available but was latter defined
-	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-	        cachedSetTimeout = setTimeout;
-	        return setTimeout(fun, 0);
-	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedSetTimeout(fun, 0);
-	    } catch(e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-	            return cachedSetTimeout.call(null, fun, 0);
-	        } catch(e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-	            return cachedSetTimeout.call(this, fun, 0);
-	        }
-	    }
-
-
-	}
-	function runClearTimeout(marker) {
-	    if (cachedClearTimeout === clearTimeout) {
-	        //normal enviroments in sane situations
-	        return clearTimeout(marker);
-	    }
-	    // if clearTimeout wasn't available but was latter defined
-	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-	        cachedClearTimeout = clearTimeout;
-	        return clearTimeout(marker);
-	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedClearTimeout(marker);
-	    } catch (e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-	            return cachedClearTimeout.call(null, marker);
-	        } catch (e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-	            return cachedClearTimeout.call(this, marker);
-	        }
-	    }
-
-
-
-	}
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
 
 	function cleanUpNextTick() {
-	    if (!draining || !currentQueue) {
-	        return;
-	    }
 	    draining = false;
 	    if (currentQueue.length) {
 	        queue = currentQueue.concat(queue);
@@ -10136,7 +10078,7 @@
 	    if (draining) {
 	        return;
 	    }
-	    var timeout = runTimeout(cleanUpNextTick);
+	    var timeout = setTimeout(cleanUpNextTick);
 	    draining = true;
 
 	    var len = queue.length;
@@ -10153,7 +10095,7 @@
 	    }
 	    currentQueue = null;
 	    draining = false;
-	    runClearTimeout(timeout);
+	    clearTimeout(timeout);
 	}
 
 	process.nextTick = function (fun) {
@@ -10165,7 +10107,7 @@
 	    }
 	    queue.push(new Item(fun, args));
 	    if (queue.length === 1 && !draining) {
-	        runTimeout(drainQueue);
+	        setTimeout(drainQueue, 0);
 	    }
 	};
 
@@ -10221,6 +10163,11 @@
 	}(this, function () { 'use strict';
 
 		var babelHelpers = {};
+		babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+		  return typeof obj;
+		} : function (obj) {
+		  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+		};
 
 		babelHelpers.classCallCheck = function (instance, Constructor) {
 		  if (!(instance instanceof Constructor)) {
@@ -10248,10 +10195,10 @@
 
 		babelHelpers;
 
-		var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
+		var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 		function interopDefault(ex) {
-			return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
+			return ex && (typeof ex === 'undefined' ? 'undefined' : babelHelpers.typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
 		}
 
 		function createCommonjsModule(fn, module) {
@@ -10771,8 +10718,8 @@
 		          // see also: https://github.com/bevacqua/dragula/issues/208
 		          item.focus(); // fixes https://github.com/bevacqua/dragula/issues/176
 		        } else {
-		          e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
-		        }
+		            e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
+		          }
 		      }
 		    }
 
@@ -11314,6 +11261,15 @@
 		  throw new Error('[vue-dragula] cannot locate dragula.');
 		}
 
+		var raf = window.requestAnimationFrame;
+		var waitForTransition = raf ? function (fn) {
+		  raf(function () {
+		    raf(fn);
+		  });
+		} : function (fn) {
+		  window.setTimeout(fn, 50);
+		};
+
 		var DragulaService = function () {
 		  function DragulaService(Vue) {
 		    babelHelpers.classCallCheck(this, DragulaService);
@@ -11394,12 +11350,14 @@
 		          var dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]));
 
 		          if (notCopy) {
-		            sourceModel.splice(dragIndex, 1);
+		            waitForTransition(function () {
+		              sourceModel.splice(dragIndex, 1);
+		            });
 		          }
 		          targetModel.splice(dropIndex, 0, dropElmModel);
 		          drake.cancel(true);
 		        }
-		        _this2.eventBus.$emit('dropModel', [name, dropElm, target, source]);
+		        _this2.eventBus.$emit('dropModel', [name, dropElm, dropIndex, target, source]);
 		      });
 		      drake.registered = true;
 		    }
@@ -11501,6 +11459,12 @@
 		        return;
 		      }
 
+		      var bagName = this.params.bag;
+		      if (bagName !== undefined && bagName.length !== 0) {
+		        name = bagName;
+		      }
+		      var bag = service.find(name);
+		      drake = bag.drake;
 		      if (!drake.models) {
 		        drake.models = [];
 		      }
@@ -11556,8 +11520,8 @@
 		    plugin;
 		  }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)); // eslint-disable-line
 		} else if (window.Vue) {
-		  window.Vue.use(plugin);
-		}
+		    window.Vue.use(plugin);
+		  }
 
 		return plugin;
 

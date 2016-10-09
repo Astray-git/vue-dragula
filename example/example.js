@@ -1,5 +1,5 @@
-var Vue = require('vue');
-var VueDragula = require('../dist/vue-dragula');
+var Vue = require('vue')
+var VueDragula = require('../dist/vue-dragula')
 
 Vue.config.debug = true
 
@@ -17,7 +17,21 @@ new Vue({
       'This is the default use case. You only need to specify the containers you want to use',
       'More interactive use cases lie ahead',
       'Another message'
+    ],
+    categories: [
+      [1, 2, 3],
+      [4, 5, 6]
     ]
+  },
+  created: function () {
+    var filterContainer = this.$els.filter
+    Vue.vueDragula.options('first-bag', {
+      copy: function () {
+        console.log(filterContainer)
+        return true
+      },
+      removeOnSpill: true
+    })
   },
   ready: function () {
     var _this = this
@@ -25,20 +39,37 @@ new Vue({
       'drop',
       function (args) {
         console.log('drop: ' + args[0])
-        console.log(_this.colOne)
+        console.log(_this.categories)
       }
     )
     Vue.vueDragula.eventBus.$on(
       'dropModel',
       function (args) {
-        console.log('dropModel: ' + args[0])
-        console.log(_this.colOne)
+        console.log('dropModel: ' + args)
+        console.log(_this.categories)
       }
     )
   },
   methods: {
     onClick: function () {
+      console.log(Vue.vueDragula.find('first-bag'))
       window.alert('click event')
+    },
+    test: function () {
+      // this.categories = []
+      // this.$nextTick(function () {
+      //   this.categories = [
+      //     ['a', 'b', 'c'],
+      //     ['d', 'e', 'f']
+      //   ]
+      // })
+      // this.categories = [
+      //   ['a', 'b', 'c'],
+      //   ['d', 'e', 'f']
+      // ]
+      var sec = this.categories[1]
+      sec.splice(sec.length - 1, 1)
+      //this.categories[0].push(this.categories[1][])
     }
   }
 })

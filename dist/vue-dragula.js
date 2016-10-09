@@ -10,6 +10,11 @@
 }(this, function () { 'use strict';
 
 	var babelHelpers = {};
+	babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+	  return typeof obj;
+	} : function (obj) {
+	  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+	};
 
 	babelHelpers.classCallCheck = function (instance, Constructor) {
 	  if (!(instance instanceof Constructor)) {
@@ -37,10 +42,10 @@
 
 	babelHelpers;
 
-	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
+	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 	function interopDefault(ex) {
-		return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
+		return ex && (typeof ex === 'undefined' ? 'undefined' : babelHelpers.typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
 	}
 
 	function createCommonjsModule(fn, module) {
@@ -560,8 +565,8 @@ var require$$0$3 = Object.freeze({
 	          // see also: https://github.com/bevacqua/dragula/issues/208
 	          item.focus(); // fixes https://github.com/bevacqua/dragula/issues/176
 	        } else {
-	          e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
-	        }
+	            e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
+	          }
 	      }
 	    }
 
@@ -1103,6 +1108,15 @@ var require$$0$3 = Object.freeze({
 	  throw new Error('[vue-dragula] cannot locate dragula.');
 	}
 
+	var raf = window.requestAnimationFrame;
+	var waitForTransition = raf ? function (fn) {
+	  raf(function () {
+	    raf(fn);
+	  });
+	} : function (fn) {
+	  window.setTimeout(fn, 50);
+	};
+
 	var DragulaService = function () {
 	  function DragulaService(Vue) {
 	    babelHelpers.classCallCheck(this, DragulaService);
@@ -1183,12 +1197,14 @@ var require$$0$3 = Object.freeze({
 	          var dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]));
 
 	          if (notCopy) {
-	            sourceModel.splice(dragIndex, 1);
+	            waitForTransition(function () {
+	              sourceModel.splice(dragIndex, 1);
+	            });
 	          }
 	          targetModel.splice(dropIndex, 0, dropElmModel);
 	          drake.cancel(true);
 	        }
-	        _this2.eventBus.$emit('dropModel', [name, dropElm, target, source]);
+	        _this2.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex]);
 	      });
 	      drake.registered = true;
 	    }
@@ -1290,6 +1306,12 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 
+	      var bagName = this.params.bag;
+	      if (bagName !== undefined && bagName.length !== 0) {
+	        name = bagName;
+	      }
+	      var bag = service.find(name);
+	      drake = bag.drake;
 	      if (!drake.models) {
 	        drake.models = [];
 	      }
@@ -1345,8 +1367,8 @@ var require$$0$3 = Object.freeze({
 	    plugin;
 	  }); // eslint-disable-line
 	} else if (window.Vue) {
-	  window.Vue.use(plugin);
-	}
+	    window.Vue.use(plugin);
+	  }
 
 	return plugin;
 

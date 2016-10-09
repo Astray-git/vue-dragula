@@ -171,3 +171,16 @@ button:hover {
   background-color: rgba(0, 0, 0, 0.4);
   cursor: move;
 }
+
+/* example styles */
+.container .scale-transition {
+  overflow: hidden;
+  height: 40px;
+  transition: height .2s;
+}
+.container .scale-enter {
+  height: 0px;
+}
+.container .scale-leave {
+  height: 0px;
+}
