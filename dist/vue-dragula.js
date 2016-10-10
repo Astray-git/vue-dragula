@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.1.0
+ * vue-dragula v1.3.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1176,7 +1176,7 @@ var require$$0$3 = Object.freeze({
 	        sourceModel = _this2.findModelForContainer(source, drake);
 	        sourceModel.splice(dragIndex, 1);
 	        drake.cancel(true);
-	        _this2.eventBus.$emit('removeModel', [name, el, source]);
+	        _this2.eventBus.$emit('removeModel', [name, el, source, dragIndex]);
 	      });
 	      drake.on('drag', function (el, source) {
 	        dragElm = el;
@@ -1282,9 +1282,12 @@ var require$$0$3 = Object.freeze({
 	  Vue.directive('dragula', {
 	    params: ['bag'],
 
-	    bind: function bind() {
-	      var container = this.el;
-	      var bagName = this.params.bag;
+	    bind: function bind(container, binding, vnode) {
+	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
+	      : this.params.bag; // Vue 1
+	      if (!vnode) {
+	        container = this.el; // Vue 1
+	      }
 	      if (bagName !== undefined && bagName.length !== 0) {
 	        name = bagName;
 	      }
@@ -1301,12 +1304,15 @@ var require$$0$3 = Object.freeze({
 
 	      service.handleModels(name, drake);
 	    },
-	    update: function update(newValue, oldValue) {
+	    update: function update(container, binding, vnode, oldVnode) {
+	      var newValue = vnode ? binding.value // Vue 2
+	      : container; // Vue 1
 	      if (!newValue) {
 	        return;
 	      }
 
-	      var bagName = this.params.bag;
+	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
+	      : this.params.bag; // Vue 1
 	      if (bagName !== undefined && bagName.length !== 0) {
 	        name = bagName;
 	      }
@@ -1316,21 +1322,24 @@ var require$$0$3 = Object.freeze({
 	        drake.models = [];
 	      }
 
-	      var modelContainer = service.findModelContainerByContainer(this.el, drake);
+	      if (!vnode) {
+	        container = this.el; // Vue 1
+	      }
+	      var modelContainer = service.findModelContainerByContainer(container, drake);
 
 	      if (modelContainer) {
 	        modelContainer.model = newValue;
 	      } else {
 	        drake.models.push({
 	          model: newValue,
-	          container: this.el
+	          container: container
 	        });
 	      }
 	    },
-	    unbind: function unbind() {
-	      var container = this.el;
+	    unbind: function unbind(container, binding, vnode) {
 	      var unbindBagName = 'globalBag';
-	      var bagName = this.params.bag;
+	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
+	      : this.params.bag; // Vue 1
 	      if (bagName !== undefined && bagName.length !== 0) {
 	        unbindBagName = bagName;
 	      }
