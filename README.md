@@ -77,6 +77,6 @@ new Vue({
 | Event Name |      Listener Arguments      |  Event Description |
 | :-------------: |:-------------:| -----|
 | dropModel | bagName, el, target, source, dropIndex | model was synced, dropIndex exposed |
-| removeModel | bagName, el, container | same as normal remove, but model was synced |
+| removeModel | bagName, el, container, removeIndex | model was synced, removeIndex exposed |
 
 [1]: https://github.com/bevacqua/dragula

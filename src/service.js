@@ -77,7 +77,7 @@ class DragulaService {
       sourceModel = this.findModelForContainer(source, drake)
       sourceModel.splice(dragIndex, 1)
       drake.cancel(true)
-      this.eventBus.$emit('removeModel', [name, el, source])
+      this.eventBus.$emit('removeModel', [name, el, source, dragIndex])
     })
     drake.on('drag', (el, source) => {
       dragElm = el
