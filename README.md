@@ -3,19 +3,26 @@
 
 Vue wrapper for [`dragula`][1].
 
-## install
-``` bash
-npm install vue-dragula
-```
+## Install
+#### CommonJS
+
+- Available through npm as `vue-dragula`.
+  ``` bash
+  npm install vue-dragula
+  ```
+
+  ``` js
+  var Vue = require('vue');
+  var VueDragula = require('vue-dragula');
+
+  Vue.use(VueDragula);
+  ```
+
+#### Direct include
+
+- You can also directly include it with a `<script>` tag when you have Vue and dragula already included globally. It will automatically install itself.
 
 ## Usage
-script:
-``` javascript
-var Vue = require('vue');
-var VueDragula = require('vue-dragula');
-
-Vue.use(VueDragula);
-```
 
 template:
 ``` html
