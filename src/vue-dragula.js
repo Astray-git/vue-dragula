@@ -11,6 +11,7 @@ export default function (Vue) {
   let name = 'globalBag'
   let drake
 
+  console.log('Adding Dragula as plugin...')
   Vue.$dragula = {
     options: service.setOptions.bind(service),
     find: service.find.bind(service),
@@ -22,6 +23,8 @@ export default function (Vue) {
     params: ['bag'],
 
     bind (container, binding, vnode) {
+      console.log('bind Dragula', container)
+
       const bagName = vnode
         ? vnode.data.attrs.bag // Vue 2
         : this.params.bag // Vue 1
@@ -46,6 +49,8 @@ export default function (Vue) {
     },
 
     update (container, binding, vnode, oldVnode) {
+      console.log('update Dragula', container)
+
       const newValue = vnode
         ? binding.value // Vue 2
         : container // Vue 1
@@ -79,6 +84,8 @@ export default function (Vue) {
     },
 
     unbind (container, binding, vnode) {
+      console.log('unbind Dragula', container)
+
       let unbindBagName = 'globalBag'
       const bagName = vnode
         ? vnode.data.attrs.bag // Vue 2

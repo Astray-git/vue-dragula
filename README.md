@@ -13,6 +13,23 @@ WIP attempting to make example work with Vue 2.x
 - Using `$nextTick` callback as recommended in Vue2 guide
 - Using `this.$dragula` to access dragula extension/plugin  via Vue prototype global inherited by components 
 
+### TODO
+
+Check new [directives API](https://vuejs.org/v2/guide/custom-directive.html) and modify as needed:
+
+`bind`: called only once, when the directive is first bound to the element. This is where you can do one-time setup work.
+
+`inserted`: called when the bound element has been inserted into its parent node (this only guarantees parent node presence, not necessarily in-document).
+
+`update`: called after the containing component has updated, but possibly before its children have updated. The directive’s value may or may not have changed, but you can skip unnecessary updates by comparing the binding’s current and old values (see below on hook arguments).
+
+`componentUpdated`: called after the containing component and its children have updated.
+
+`unbind`: called only once, when the directive is unbound from the element.
+
+
+Currently, `bind`, `update` and `unbind` hooks are used.
+
 ## Install
 #### CommonJS
 

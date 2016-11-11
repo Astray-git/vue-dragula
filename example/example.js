@@ -5,6 +5,7 @@ Vue.config.debug = true
 Vue.use(VueDragula)
 
 new Vue({
+  el: '#app',
   data () {
     return {
       colOne: [
@@ -40,7 +41,9 @@ new Vue({
   },
   // See https://vuejs.org/v2/guide/instance.html#Instance-Lifecycle-Hooks
   mounted () {
+    console.log('Mounted')    
     this.$nextTick(() => {
+      console.log('Comfig $dragula.eventBus', this.$dragula.eventBus)
       // since $dragula in on Vue.prototype which all Components inherit from
       // you should also be able to do: this.$dragula  
       this.$dragula.eventBus.$on(
@@ -71,4 +74,4 @@ new Vue({
       ]
     }
   }
-}).$mount('body')
+}) //.$mount('#app')
