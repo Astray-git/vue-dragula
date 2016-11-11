@@ -11,12 +11,13 @@ export default function (Vue) {
   let name = 'globalBag'
   let drake
 
-  Vue.prototype.$dragula = {
+  Vue.$dragula = {
     options: service.setOptions.bind(service),
     find: service.find.bind(service),
     eventBus: service.eventBus
   }
-
+  Vue.prototype.$dragula = Vue.$dragula 
+ 
   Vue.directive('dragula', {
     params: ['bag'],
 

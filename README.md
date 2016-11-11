@@ -3,6 +3,16 @@
 
 Vue wrapper for [`dragula`][1].
 
+## Status
+
+WIP attempting to make example work with Vue 2.x
+
+### Changelog
+
+- Changed life cycle method `ready` to `mounted`
+- Using `$nextTick` callback as recommended in Vue2 guide
+- Using `this.$dragula` to access dragula extension/plugin  via Vue prototype global inherited by components 
+
 ## Install
 #### CommonJS
 
@@ -96,4 +106,24 @@ Following npm scripts are included:
 - `npm run dev` run example in dev mode
 - `npm run lint` lint code using ESlint
 
-How to view the example!? WTF - I have node idea!!! Please document!!! :)
+How to view the example? Start a simple Http server, like the pythong [simplehttpserver](http://angusjune.github.io/blog/2014/08/16/python-3-dot-x-no-module-named-simplehttpserver/)
+
+`python -m http.server`
+
+The open in browser: `open localhost:8000`
+
+## Issues on Vue 2
+
+```
+  function ready () {
+    
+    domReadyTime = Date.now() ;
+      
+    // First, check if it's a PRE and exit if not
+      var bodyChildren = document.body.childNodes ;
+```
+
+```
+Exception:
+TypeError: Cannot read property 'childNodes' of null at HTMLDocument.ready
+```       

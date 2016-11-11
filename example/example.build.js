@@ -46,72 +46,78 @@
 
 	var Vue = __webpack_require__(1)
 	var VueDragula = __webpack_require__(3)
-
 	Vue.config.debug = true
 
 	Vue.use(VueDragula)
 
 	new Vue({
-	  el: 'body',
-	  data: {
-	    colOne: [
-	      'You can move these elements between these two containers',
-	      'Moving them anywhere else isn"t quite possible',
-	      'There"s also the possibility of moving elements around in the same container, changing their position'
-	    ],
-	    colTwo: [
-	      'This is the default use case. You only need to specify the containers you want to use',
-	      'More interactive use cases lie ahead',
-	      'Another message'
-	    ],
-	    categories: [
-	      [1, 2, 3],
-	      [4, 5, 6]
-	    ],
-	    copyOne: [
-	      'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.',
-	      'Aenean commodo ligula eget dolor. Aenean massa.'
-	    ],
-	    copyTwo: [
-	      'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.',
-	      'Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.'
-	    ]
+	  data () {
+	    return {
+	      colOne: [
+	        'You can move these elements between these two containers',
+	        'Moving them anywhere else isn"t quite possible',
+	        'There"s also the possibility of moving elements around in the same container, changing their position'
+	      ],
+	      colTwo: [
+	        'This is the default use case. You only need to specify the containers you want to use',
+	        'More interactive use cases lie ahead',
+	        'Another message'
+	      ],
+	      categories: [
+	        [1, 2, 3],
+	        [4, 5, 6]
+	      ],
+	      copyOne: [
+	        'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.',
+	        'Aenean commodo ligula eget dolor. Aenean massa.'
+	      ],
+	      copyTwo: [
+	        'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.',
+	        'Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.'
+	      ]
+	    }
 	  },
-	  created: function () {
-	    Vue.vueDragula.options('third-bag', {
+	  created () {
+	    console.log(Vue, Vue.prototype)
+
+	    Vue.$dragula.options('third-bag', {
 	      copy: true
 	    })
 	  },
-	  ready: function () {
-	    var _this = this
-	    Vue.$dragula.eventBus.$on(
-	      'drop',
-	      function (args) {
-	        console.log('drop: ' + args[0])
-	        console.log(_this.categories)
-	      }
-	    )
-	    Vue.$dragula.eventBus.$on(
-	      'dropModel',
-	      function (args) {
-	        console.log('dropModel: ' + args)
-	        console.log(_this.categories)
-	      }
-	    )
+	  // See https://vuejs.org/v2/guide/instance.html#Instance-Lifecycle-Hooks
+	  mounted () {
+	    this.$nextTick(() => {
+	      // since $dragula in on Vue.prototype which all Components inherit from
+	      // you should also be able to do: this.$dragula  
+	      this.$dragula.eventBus.$on(
+	        'drop',
+	        function (args) {
+	          console.log('drop: ' + args[0])
+	          console.log(this.categories)
+	        }
+	      )
+	      this.$dragula.eventBus.$on(
+	        'dropModel',
+	        function (args) {
+	          console.log('dropModel: ' + args)
+	          console.log(this.categories)
+	        }
+	      )
+	    })
 	  },
 	  methods: {
-	    onClick: function () {
-	      console.log(Vue.$dragula.find('first-bag'))
+	    onClick () {
+	      console.log(this.$dragula.find('first-bag'))
 	      window.alert('click event')
 	    },
-	    testModify: function () {
+	    testModify () {
 	      this.categories = [
 	        ['a', 'b', 'c'],
 	        ['d', 'e', 'f']
 	      ]
 	    }
 	  }
-	})
+	}).$mount('body')
 
 
 /***/ },
@@ -5994,43 +6000,10 @@
 		(global.vueDragula = factory());
 	}(this, function () { 'use strict';
 
-		var babelHelpers = {};
-		babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-		  return typeof obj;
-		} : function (obj) {
-		  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-		};
-
-		babelHelpers.classCallCheck = function (instance, Constructor) {
-		  if (!(instance instanceof Constructor)) {
-		    throw new TypeError("Cannot call a class as a function");
-		  }
-		};
-
-		babelHelpers.createClass = function () {
-		  function defineProperties(target, props) {
-		    for (var i = 0; i < props.length; i++) {
-		      var descriptor = props[i];
-		      descriptor.enumerable = descriptor.enumerable || false;
-		      descriptor.configurable = true;
-		      if ("value" in descriptor) descriptor.writable = true;
-		      Object.defineProperty(target, descriptor.key, descriptor);
-		    }
-		  }
-
-		  return function (Constructor, protoProps, staticProps) {
-		    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-		    if (staticProps) defineProperties(Constructor, staticProps);
-		    return Constructor;
-		  };
-		}();
-
-		babelHelpers;
-
-		var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+		var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
 
 		function interopDefault(ex) {
-			return ex && (typeof ex === 'undefined' ? 'undefined' : babelHelpers.typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
+			return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
 		}
 
 		function createCommonjsModule(fn, module) {
@@ -6550,8 +6523,8 @@
 		          // see also: https://github.com/bevacqua/dragula/issues/208
 		          item.focus(); // fixes https://github.com/bevacqua/dragula/issues/176
 		        } else {
-		            e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
-		          }
+		          e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
+		        }
 		      }
 		    }
 
@@ -7089,6 +7062,143 @@
 
 		var dragula$1 = interopDefault(dragula);
 
+		var asyncGenerator = function () {
+		  function AwaitValue(value) {
+		    this.value = value;
+		  }
+
+		  function AsyncGenerator(gen) {
+		    var front, back;
+
+		    function send(key, arg) {
+		      return new Promise(function (resolve, reject) {
+		        var request = {
+		          key: key,
+		          arg: arg,
+		          resolve: resolve,
+		          reject: reject,
+		          next: null
+		        };
+
+		        if (back) {
+		          back = back.next = request;
+		        } else {
+		          front = back = request;
+		          resume(key, arg);
+		        }
+		      });
+		    }
+
+		    function resume(key, arg) {
+		      try {
+		        var result = gen[key](arg);
+		        var value = result.value;
+
+		        if (value instanceof AwaitValue) {
+		          Promise.resolve(value.value).then(function (arg) {
+		            resume("next", arg);
+		          }, function (arg) {
+		            resume("throw", arg);
+		          });
+		        } else {
+		          settle(result.done ? "return" : "normal", result.value);
+		        }
+		      } catch (err) {
+		        settle("throw", err);
+		      }
+		    }
+
+		    function settle(type, value) {
+		      switch (type) {
+		        case "return":
+		          front.resolve({
+		            value: value,
+		            done: true
+		          });
+		          break;
+
+		        case "throw":
+		          front.reject(value);
+		          break;
+
+		        default:
+		          front.resolve({
+		            value: value,
+		            done: false
+		          });
+		          break;
+		      }
+
+		      front = front.next;
+
+		      if (front) {
+		        resume(front.key, front.arg);
+		      } else {
+		        back = null;
+		      }
+		    }
+
+		    this._invoke = send;
+
+		    if (typeof gen.return !== "function") {
+		      this.return = undefined;
+		    }
+		  }
+
+		  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+		    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+		      return this;
+		    };
+		  }
+
+		  AsyncGenerator.prototype.next = function (arg) {
+		    return this._invoke("next", arg);
+		  };
+
+		  AsyncGenerator.prototype.throw = function (arg) {
+		    return this._invoke("throw", arg);
+		  };
+
+		  AsyncGenerator.prototype.return = function (arg) {
+		    return this._invoke("return", arg);
+		  };
+
+		  return {
+		    wrap: function (fn) {
+		      return function () {
+		        return new AsyncGenerator(fn.apply(this, arguments));
+		      };
+		    },
+		    await: function (value) {
+		      return new AwaitValue(value);
+		    }
+		  };
+		}();
+
+		var classCallCheck = function (instance, Constructor) {
+		  if (!(instance instanceof Constructor)) {
+		    throw new TypeError("Cannot call a class as a function");
+		  }
+		};
+
+		var createClass = function () {
+		  function defineProperties(target, props) {
+		    for (var i = 0; i < props.length; i++) {
+		      var descriptor = props[i];
+		      descriptor.enumerable = descriptor.enumerable || false;
+		      descriptor.configurable = true;
+		      if ("value" in descriptor) descriptor.writable = true;
+		      Object.defineProperty(target, descriptor.key, descriptor);
+		    }
+		  }
+
+		  return function (Constructor, protoProps, staticProps) {
+		    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+		    if (staticProps) defineProperties(Constructor, staticProps);
+		    return Constructor;
+		  };
+		}();
+
 		if (!dragula$1) {
 		  throw new Error('[vue-dragula] cannot locate dragula.');
 		}
@@ -7104,14 +7214,14 @@
 
 		var DragulaService = function () {
 		  function DragulaService(Vue) {
-		    babelHelpers.classCallCheck(this, DragulaService);
+		    classCallCheck(this, DragulaService);
 
 		    this.bags = []; // bag store
 		    this.eventBus = new Vue();
 		    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 		  }
 
-		  babelHelpers.createClass(DragulaService, [{
+		  createClass(DragulaService, [{
 		    key: 'add',
 		    value: function add(name, drake) {
 		      var bag = this.find(name);
@@ -7258,11 +7368,12 @@
 		  var name = 'globalBag';
 		  var drake = void 0;
 
-		  Vue.vueDragula = {
+		  Vue.$dragula = {
 		    options: service.setOptions.bind(service),
 		    find: service.find.bind(service),
 		    eventBus: service.eventBus
 		  };
+		  Vue.prototype.$dragula = Vue.$dragula;
 
 		  Vue.directive('dragula', {
 		    params: ['bag'],
@@ -7344,7 +7455,7 @@
 		}
 
 		function plugin(Vue) {
-		  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+		  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 		  if (plugin.installed) {
 		    console.warn('[vue-dragula] already installed.');
@@ -7361,8 +7472,8 @@
 		    plugin;
 		  }.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__)); // eslint-disable-line
 		} else if (window.Vue) {
-		    window.Vue.use(plugin);
-		  }
+		  window.Vue.use(plugin);
+		}
 
 		return plugin;
 

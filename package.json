@@ -20,7 +20,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "dragula": "3.7.2"
+    "dragula": "3.7.2",
+    "lodash.merge": "^4.6.0"
   },
   "devDependencies": {
     "babel-core": "^6.2.1",

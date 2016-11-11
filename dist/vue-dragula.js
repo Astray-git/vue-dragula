@@ -9,43 +9,10 @@
 	(global.vueDragula = factory());
 }(this, function () { 'use strict';
 
-	var babelHelpers = {};
-	babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-	  return typeof obj;
-	} : function (obj) {
-	  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-	};
-
-	babelHelpers.classCallCheck = function (instance, Constructor) {
-	  if (!(instance instanceof Constructor)) {
-	    throw new TypeError("Cannot call a class as a function");
-	  }
-	};
-
-	babelHelpers.createClass = function () {
-	  function defineProperties(target, props) {
-	    for (var i = 0; i < props.length; i++) {
-	      var descriptor = props[i];
-	      descriptor.enumerable = descriptor.enumerable || false;
-	      descriptor.configurable = true;
-	      if ("value" in descriptor) descriptor.writable = true;
-	      Object.defineProperty(target, descriptor.key, descriptor);
-	    }
-	  }
-
-	  return function (Constructor, protoProps, staticProps) {
-	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-	    if (staticProps) defineProperties(Constructor, staticProps);
-	    return Constructor;
-	  };
-	}();
-
-	babelHelpers;
-
-	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
 
 	function interopDefault(ex) {
-		return ex && (typeof ex === 'undefined' ? 'undefined' : babelHelpers.typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
+		return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
 	}
 
 	function createCommonjsModule(fn, module) {
@@ -565,8 +532,8 @@ var require$$0$3 = Object.freeze({
 	          // see also: https://github.com/bevacqua/dragula/issues/208
 	          item.focus(); // fixes https://github.com/bevacqua/dragula/issues/176
 	        } else {
-	            e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
-	          }
+	          e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
+	        }
 	      }
 	    }
 
@@ -1104,6 +1071,143 @@ var require$$0$3 = Object.freeze({
 
 	var dragula$1 = interopDefault(dragula);
 
+	var asyncGenerator = function () {
+	  function AwaitValue(value) {
+	    this.value = value;
+	  }
+
+	  function AsyncGenerator(gen) {
+	    var front, back;
+
+	    function send(key, arg) {
+	      return new Promise(function (resolve, reject) {
+	        var request = {
+	          key: key,
+	          arg: arg,
+	          resolve: resolve,
+	          reject: reject,
+	          next: null
+	        };
+
+	        if (back) {
+	          back = back.next = request;
+	        } else {
+	          front = back = request;
+	          resume(key, arg);
+	        }
+	      });
+	    }
+
+	    function resume(key, arg) {
+	      try {
+	        var result = gen[key](arg);
+	        var value = result.value;
+
+	        if (value instanceof AwaitValue) {
+	          Promise.resolve(value.value).then(function (arg) {
+	            resume("next", arg);
+	          }, function (arg) {
+	            resume("throw", arg);
+	          });
+	        } else {
+	          settle(result.done ? "return" : "normal", result.value);
+	        }
+	      } catch (err) {
+	        settle("throw", err);
+	      }
+	    }
+
+	    function settle(type, value) {
+	      switch (type) {
+	        case "return":
+	          front.resolve({
+	            value: value,
+	            done: true
+	          });
+	          break;
+
+	        case "throw":
+	          front.reject(value);
+	          break;
+
+	        default:
+	          front.resolve({
+	            value: value,
+	            done: false
+	          });
+	          break;
+	      }
+
+	      front = front.next;
+
+	      if (front) {
+	        resume(front.key, front.arg);
+	      } else {
+	        back = null;
+	      }
+	    }
+
+	    this._invoke = send;
+
+	    if (typeof gen.return !== "function") {
+	      this.return = undefined;
+	    }
+	  }
+
+	  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+	    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+	      return this;
+	    };
+	  }
+
+	  AsyncGenerator.prototype.next = function (arg) {
+	    return this._invoke("next", arg);
+	  };
+
+	  AsyncGenerator.prototype.throw = function (arg) {
+	    return this._invoke("throw", arg);
+	  };
+
+	  AsyncGenerator.prototype.return = function (arg) {
+	    return this._invoke("return", arg);
+	  };
+
+	  return {
+	    wrap: function (fn) {
+	      return function () {
+	        return new AsyncGenerator(fn.apply(this, arguments));
+	      };
+	    },
+	    await: function (value) {
+	      return new AwaitValue(value);
+	    }
+	  };
+	}();
+
+	var classCallCheck = function (instance, Constructor) {
+	  if (!(instance instanceof Constructor)) {
+	    throw new TypeError("Cannot call a class as a function");
+	  }
+	};
+
+	var createClass = function () {
+	  function defineProperties(target, props) {
+	    for (var i = 0; i < props.length; i++) {
+	      var descriptor = props[i];
+	      descriptor.enumerable = descriptor.enumerable || false;
+	      descriptor.configurable = true;
+	      if ("value" in descriptor) descriptor.writable = true;
+	      Object.defineProperty(target, descriptor.key, descriptor);
+	    }
+	  }
+
+	  return function (Constructor, protoProps, staticProps) {
+	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+	    if (staticProps) defineProperties(Constructor, staticProps);
+	    return Constructor;
+	  };
+	}();
+
 	if (!dragula$1) {
 	  throw new Error('[vue-dragula] cannot locate dragula.');
 	}
@@ -1119,14 +1223,14 @@ var require$$0$3 = Object.freeze({
 
 	var DragulaService = function () {
 	  function DragulaService(Vue) {
-	    babelHelpers.classCallCheck(this, DragulaService);
+	    classCallCheck(this, DragulaService);
 
 	    this.bags = []; // bag store
 	    this.eventBus = new Vue();
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 	  }
 
-	  babelHelpers.createClass(DragulaService, [{
+	  createClass(DragulaService, [{
 	    key: 'add',
 	    value: function add(name, drake) {
 	      var bag = this.find(name);
@@ -1273,11 +1377,12 @@ var require$$0$3 = Object.freeze({
 	  var name = 'globalBag';
 	  var drake = void 0;
 
-	  Vue.vueDragula = {
+	  Vue.$dragula = {
 	    options: service.setOptions.bind(service),
 	    find: service.find.bind(service),
 	    eventBus: service.eventBus
 	  };
+	  Vue.prototype.$dragula = Vue.$dragula;
 
 	  Vue.directive('dragula', {
 	    params: ['bag'],
@@ -1359,7 +1464,7 @@ var require$$0$3 = Object.freeze({
 	}
 
 	function plugin(Vue) {
-	  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	  if (plugin.installed) {
 	    console.warn('[vue-dragula] already installed.');
@@ -1376,8 +1481,8 @@ var require$$0$3 = Object.freeze({
 	    plugin;
 	  }); // eslint-disable-line
 	} else if (window.Vue) {
-	    window.Vue.use(plugin);
-	  }
+	  window.Vue.use(plugin);
+	}
 
 	return plugin;
 
