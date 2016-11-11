@@ -87,3 +87,13 @@ new Vue({
 | removeModel | bagName, el, container, removeIndex | model was synced, removeIndex exposed |
 
 [1]: https://github.com/bevacqua/dragula
+
+## Development
+
+Following npm scripts are included:
+
+- `npm run build` to build new distribution in `/dist`
+- `npm run dev` run example in dev mode
+- `npm run lint` lint code using ESlint
+
+How to view the example!? WTF - I have node idea!!! Please document!!! :)

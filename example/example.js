@@ -38,14 +38,14 @@ new Vue({
   },
   ready: function () {
     var _this = this
-    Vue.vueDragula.eventBus.$on(
+    Vue.$dragula.eventBus.$on(
       'drop',
       function (args) {
         console.log('drop: ' + args[0])
         console.log(_this.categories)
       }
     )
-    Vue.vueDragula.eventBus.$on(
+    Vue.$dragula.eventBus.$on(
       'dropModel',
       function (args) {
         console.log('dropModel: ' + args)
@@ -55,7 +55,7 @@ new Vue({
   },
   methods: {
     onClick: function () {
-      console.log(Vue.vueDragula.find('first-bag'))
+      console.log(Vue.$dragula.find('first-bag'))
       window.alert('click event')
     },
     testModify: function () {
