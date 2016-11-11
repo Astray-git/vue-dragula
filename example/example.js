@@ -6,6 +6,7 @@ Vue.use(VueDragula)
 
 new Vue({
   el: '#app',
+  template: require('./template'),
   data () {
     return {
       colOne: [

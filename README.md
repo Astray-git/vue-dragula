@@ -144,3 +144,9 @@ The open in browser: `open localhost:8000`
 Exception:
 TypeError: Cannot read property 'childNodes' of null at HTMLDocument.ready
 ```       
+
+### Recommendations
+
+Basically, the example needs to use proper `.vue` templates to work as discussed [here](https://github.com/vuejs-templates/webpack/issues/215)
+
+So please update example to use webpack or better yet, create demo app using basic Vue2 setup with webpack :)  
