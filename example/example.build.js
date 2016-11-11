@@ -50,9 +50,19 @@
 
 	Vue.use(VueDragula)
 
+	let template = __webpack_require__(5);
+
 	new Vue({
 	  el: '#app',
-	  template: __webpack_require__(5),
+
+	  // Does NOT seem to work anymore...
+	  // template: require('./template'),
+
+	  // Would needs to convert into manual VDOM 
+	  // render () {
+	  //   return template
+	  // },
+
 	  data () {
 	    return {
 	      colOne: [

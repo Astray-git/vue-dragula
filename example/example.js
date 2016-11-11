@@ -4,9 +4,19 @@ Vue.config.debug = true
 
 Vue.use(VueDragula)
 
+let template = require('./template');
+
 new Vue({
   el: '#app',
-  template: require('./template'),
+
+  // Does NOT seem to work anymore...
+  // template: require('./template'),
+
+  // Would needs to convert into manual VDOM 
+  // render () {
+  //   return template
+  // },
+
   data () {
     return {
       colOne: [

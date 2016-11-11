@@ -150,3 +150,59 @@ TypeError: Cannot read property 'childNodes' of null at HTMLDocument.ready
 Basically, the example needs to use proper `.vue` templates to work as discussed [here](https://github.com/vuejs-templates/webpack/issues/215)
 
 So please update example to use webpack or better yet, create demo app using basic Vue2 setup with webpack :)  
+
+I've started such a [demo app](https://github.com/kristianmandrup/vue2-dragula-demo) but having problems :() 
+
+I don't yet understand the Vue2 plugin architecture! Please help out...
+
+### Vue 2 Plugin
+
+Trying to add dragula as a [Vue 2 plugin](https://vuejs.org/v2/guide/plugins.html)
+
+```js
+  // 3. inject some component options
+  Vue.mixin({
+    created: function () {
+      // something logic ...
+    }
+    ...
+  })
+  // 4. add an instance method
+  Vue.prototype.$myMethod = function (options) {
+    // something logic ...
+  }  
+```
+
+Looks correct to add `$dragula` to `Vue.prototype` as shown [here](https://github.com/aarondfrancis/vue-model/blob/master/src/VueModel.js#L99)
+
+```js
+function plugin (Vue, options = {}) {
+  if (plugin.installed) {
+    console.warn('[vue-dragula] already installed.')
+  }
+
+  console.log('Add Dragula plugin:', options)
+  VueDragula(Vue, options)
+}
+```
+
+
+We then call the function in `vue-dragula.js` which adds `$dragula` to `Vue.prototype` in accordance with Vue 2 specs on plugins.
+What is missing!?!?! WTF!!!
+
+```js
+export default function (Vue, options = {}) {
+  const service = new DragulaService(Vue)
+
+  let name = 'globalBag'
+  let drake
+
+  console.log('Adding Dragula as plugin...')
+  Vue.$dragula = {
+    options: service.setOptions.bind(service),
+    find: service.find.bind(service),
+    eventBus: service.eventBus
+  }
+  Vue.prototype.$dragula = Vue.$dragula 
+}
+```

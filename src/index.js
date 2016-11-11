@@ -6,7 +6,7 @@ function plugin (Vue, options = {}) {
   }
 
   console.log('Add Dragula plugin:', options)
-  VueDragula(Vue)
+  VueDragula(Vue, options)
 }
 
 plugin.version = '1.0.0'

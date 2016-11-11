@@ -5,7 +5,7 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-export default function (Vue) {
+export default function (Vue, options = {}) {
   const service = new DragulaService(Vue)
 
   let name = 'globalBag'
