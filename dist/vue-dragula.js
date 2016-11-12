@@ -4,10 +4,10 @@
  * Released under the MIT License.
  */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.vueDragula = factory());
-}(this, function () { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.vueDragula = global.vueDragula || {})));
+}(this, function (exports) { 'use strict';
 
 	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
 
@@ -1221,13 +1221,19 @@ var require$$0$3 = Object.freeze({
 	  window.setTimeout(fn, 50);
 	};
 
-	var DragulaService = function () {
-	  function DragulaService(Vue) {
+	// Use one Service per directive instance
+
+	var DragulaService$1 = function () {
+	  function DragulaService(_ref) {
+	    var name = _ref.name,
+	        eventBus = _ref.eventBus,
+	        bags = _ref.bags;
 	    classCallCheck(this, DragulaService);
 
 	    console.log('Create Dragula service');
-	    this.bags = []; // bag store
-	    this.eventBus = new Vue();
+	    this.name = name;
+	    this.bags = bags || []; // bag store
+	    this.eventBus = eventBus;
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 	  }
 
@@ -1278,6 +1284,7 @@ var require$$0$3 = Object.freeze({
 	      var dragIndex = void 0;
 	      var dropIndex = void 0;
 	      var sourceModel = void 0;
+
 	      drake.on('remove', function (el, container, source) {
 	        if (!drake.models) {
 	          return;
@@ -1287,10 +1294,12 @@ var require$$0$3 = Object.freeze({
 	        drake.cancel(true);
 	        _this2.eventBus.$emit('removeModel', [name, el, source, dragIndex]);
 	      });
+
 	      drake.on('drag', function (el, source) {
 	        dragElm = el;
 	        dragIndex = _this2.domIndexOf(el, source);
 	      });
+
 	      drake.on('drop', function (dropElm, target, source) {
 	        if (!drake.models || !target) {
 	          return;
@@ -1316,6 +1325,42 @@ var require$$0$3 = Object.freeze({
 	        _this2.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex]);
 	      });
 	      drake.registered = true;
+	    }
+
+	    // convenience to set eventBus handlers via Object
+
+	  }, {
+	    key: 'on',
+	    value: function on() {
+	      var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      var handlerNames = Object.keys(handlerConfig);
+
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = handlerNames[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var handlerName = _step.value;
+
+	          var handlerFunction = handlerConfig[handlerName];
+	          this.eventBus.$on(handlerName, handlerFunction);
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
 	    }
 	  }, {
 	    key: 'destroy',
@@ -1376,21 +1421,115 @@ var require$$0$3 = Object.freeze({
 	  throw new Error('[vue-dragula] cannot locate dragula.');
 	}
 
+	function defaultCreateService(_ref) {
+	  var name = _ref.name,
+	      eventBus = _ref.eventBus,
+	      bags = _ref.bags;
+
+	  return new DragulaService$1({
+	    name: name,
+	    eventBus: eventBus,
+	    bags: bags
+	  });
+	}
+
 	function VueDragula (Vue) {
 	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	  var service = new DragulaService(Vue);
+	  var eventBus = new Vue();
+	  var createService = options.createService || defaultCreateService;
+
+	  var service = createService({
+	    name: 'global.dragula',
+	    eventBus: eventBus,
+	    bags: options.bags
+	  });
 
 	  var name = 'globalBag';
 	  var drake = void 0;
 
 	  console.log('Adding Dragula as plugin...');
-	  Vue.$dragula = {
+
+	  Vue.prototype.$dragula = {
 	    options: service.setOptions.bind(service),
 	    find: service.find.bind(service),
-	    eventBus: service.eventBus
+	    eventBus: service.eventBus,
+
+	    create: function create() {
+	      var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      this.services = this.services || {};
+	      var containers = serviceOpts.containers || [];
+	      var eventBus = serviceOpts.eventBus || eventBus;
+	      var bags = serviceOpts.bags || [];
+
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = containers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var container = _step.value;
+
+	          var _name = container;
+	          var _service = new DragulaService$1({
+	            name: _name,
+	            eventBus: eventBus,
+	            bags: bags
+	          });
+	          this.services[_name] = _service;
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
+
+	      return this;
+	    },
+	    allOn: function allOn() {
+	      var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      var services = Object.values(this.services);
+	      var _iteratorNormalCompletion2 = true;
+	      var _didIteratorError2 = false;
+	      var _iteratorError2 = undefined;
+
+	      try {
+	        for (var _iterator2 = services[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	          var _service2 = _step2.value;
+
+	          _service2.on(handlerConfig);
+	        }
+	      } catch (err) {
+	        _didIteratorError2 = true;
+	        _iteratorError2 = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	            _iterator2.return();
+	          }
+	        } finally {
+	          if (_didIteratorError2) {
+	            throw _iteratorError2;
+	          }
+	        }
+	      }
+	    },
+	    // allow specifying individual handlers on particular servic
+	    service: function service(name) {
+	      return this.services[name];
+	    }
 	  };
-	  Vue.prototype.$dragula = Vue.$dragula;
 
 	  Vue.directive('dragula', {
 	    params: ['bag'],
@@ -1406,6 +1545,25 @@ var require$$0$3 = Object.freeze({
 	      if (bagName !== undefined && bagName.length !== 0) {
 	        name = bagName;
 	      }
+
+	      // first try to register on DragulaService of component
+	      var $dragulaOfComponent = vnode.context.$dragula;
+	      if ($dragulaOfComponent) {
+	        containerName = binding.expression;
+
+	        drake = dragula$1({
+	          containers: [container]
+	        });
+
+	        var containerService = $dragulaOfComponent.services[containerName];
+
+	        if (containerService) {
+	          containerService.add(name, drake);
+	          containerService.handleModels(name, drake);
+	          return;
+	        }
+	      }
+
 	      var bag = service.find(name);
 	      if (bag) {
 	        drake = bag.drake;
@@ -1420,7 +1578,8 @@ var require$$0$3 = Object.freeze({
 	      service.handleModels(name, drake);
 	    },
 	    update: function update(container, binding, vnode, oldVnode) {
-	      console.log('update Dragula', container);
+	      console.log('update Dragula', container, binding, vnode);
+	      console.log('context', vnode.context);
 
 	      var newValue = vnode ? binding.value // Vue 2
 	      : container; // Vue 1
@@ -1490,6 +1649,8 @@ var require$$0$3 = Object.freeze({
 
 	plugin.version = '1.0.0';
 
+	var DragulaService = DragulaService$1;
+
 	if (typeof define === 'function' && define.amd) {
 	  // eslint-disable-line
 	  define([], function () {
@@ -1499,6 +1660,7 @@ var require$$0$3 = Object.freeze({
 	  window.Vue.use(plugin);
 	}
 
-	return plugin;
+	exports['default'] = plugin;
+	exports.DragulaService = DragulaService;
 
 }));

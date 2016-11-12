@@ -128,8 +128,7 @@ class DragulaService {
       let handlerFunction = handlerConfig[handlerName]
       this.eventBus.$on(handlerName, handlerFunction)
     }
-  },
-
+  }
 
   destroy (name) {
     let bag = this.find(name)
