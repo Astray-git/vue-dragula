@@ -5,30 +5,20 @@ Vue wrapper for [`dragula`][1].
 
 ## Status
 
-WIP attempting to make example work with Vue 2.x
+- Make it better work with Vue 2.x
+- Make service and directive more flexible and granular as needed
 
 ### Changelog
 
-- Changed life cycle method `ready` to `mounted`
-- Using `$nextTick` callback as recommended in Vue2 guide
-- Using `this.$dragula` to access dragula extension/plugin  via Vue prototype global inherited by components 
-
-### TODO
-
-Check new [directives API](https://vuejs.org/v2/guide/custom-directive.html) and modify as needed:
-
-`bind`: called only once, when the directive is first bound to the element. This is where you can do one-time setup work.
-
-`inserted`: called when the bound element has been inserted into its parent node (this only guarantees parent node presence, not necessarily in-document).
-
-`update`: called after the containing component has updated, but possibly before its children have updated. The directive’s value may or may not have changed, but you can skip unnecessary updates by comparing the binding’s current and old values (see below on hook arguments).
-
-`componentUpdated`: called after the containing component and its children have updated.
-
-`unbind`: called only once, when the directive is unbound from the element.
-
-
-Currently, `bind`, `update` and `unbind` hooks are used.
+- Changed life cycle method `ready` to `mounted` with `$nextTick`
+- Add `$dragula` to Vue.prototype to make available on each component instance
+- Add ability to create DragulaServices per container.
+- Add ability to create and set eventbus per service, either shared or independent
+- Add methods on `$dragula`
+  - `create({name, eventBus})` : create new service
+  - `allOn(handlerConfig = {})` : add set of eventBus handlers to all services
+  - `service(name)` : access individual service
+- Make `bind` try to bind directive (with bags) to a matching named component service before falling back to bind to global dragula service.
 
 ## Install
 #### CommonJS

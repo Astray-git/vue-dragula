@@ -6,19 +6,50 @@ if (!dragula) {
 }
 
 export default function (Vue, options = {}) {
-  const service = new DragulaService(Vue)
+  const eventBus = new Vue()
+  const service = new DragulaService({
+    name: 'global.dragula',
+    eventBus
+  })
 
   let name = 'globalBag'
   let drake
 
   console.log('Adding Dragula as plugin...')
-  Vue.$dragula = {
+
+  Vue.prototype.$dragula = {
     options: service.setOptions.bind(service),
     find: service.find.bind(service),
-    eventBus: service.eventBus
+    eventBus: service.eventBus,
+
+    create: function(serviceOpts = {}) {
+      this.services = this.services || {};
+      let containers = serviceOpts.containers || []
+      let eventBus = serviceOpts.eventBus || eventBus
+
+      for (let container of containers) {
+        let name = container
+        let service = new DragulaService({
+          name,
+          eventBus
+        })
+        this.services[name] = service
+      }
+      return this
+    },
+    allOn: function(handlerConfig = {}) {
+      let services = Object.values(this.services)
+      // TODO: must set this handlerConfig on all services of this.services
+      for (let service of services) {
+        service.on(handlerConfig)
+      }
+    },
+    // allow specifying individual handlers on particular servic
+    service: function(name) {
+      return this.services[name]
+    }
   }
-  Vue.prototype.$dragula = Vue.$dragula 
- 
+
   Vue.directive('dragula', {
     params: ['bag'],
 
@@ -34,6 +65,25 @@ export default function (Vue, options = {}) {
       if (bagName !== undefined && bagName.length !== 0) {
         name = bagName
       }
+
+      // first try to register on DragulaService of component
+      let $dragulaOfComponent = vnode.context.$dragula
+      if ($dragulaOfComponent) {
+        containerName = binding.expression
+
+        drake = dragula({
+          containers: [container]
+        })
+
+        let containerService = $dragulaOfComponent.services[containerName]
+
+        if (containerService) {
+          containerService.add(name, drake)
+          containerService.handleModels(name, drake)
+          return
+        }
+      }
+
       const bag = service.find(name)
       if (bag) {
         drake = bag.drake
@@ -49,7 +99,8 @@ export default function (Vue, options = {}) {
     },
 
     update (container, binding, vnode, oldVnode) {
-      console.log('update Dragula', container)
+      console.log('update Dragula', container, binding, vnode)
+      console.log('context', vnode.context)
 
       const newValue = vnode
         ? binding.value // Vue 2

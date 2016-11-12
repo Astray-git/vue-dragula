@@ -15,11 +15,13 @@ const waitForTransition = raf
     window.setTimeout(fn, 50)
   }
 
+// Use one Service per directive instance
 class DragulaService {
-  constructor (Vue) {
-    console.log('Create Dragula service')    
-    this.bags = [] // bag store
-    this.eventBus = new Vue()
+  constructor ({name, eventBus, bags}) {
+    console.log('Create Dragula service')
+    this.name = name
+    this.bags = bags || [] // bag store
+    this.eventBus = eventBus
     this.events = [
       'cancel',
       'cloned',
@@ -36,7 +38,7 @@ class DragulaService {
   }
 
   add (name, drake) {
-    console.log('Dragula: add', name)    
+    console.log('Dragula: add', name)
     let bag = this.find(name)
     if (bag) {
       throw new Error('Bag named: "' + name + '" already exists.')
@@ -56,7 +58,7 @@ class DragulaService {
   }
 
   find (name) {
-    console.log('Dragula: find', name)    
+    console.log('Dragula: find', name)
     let bags = this.bags
     for (var i = 0; i < bags.length; i++) {
       if (bags[i].name === name) {
@@ -114,6 +116,17 @@ class DragulaService {
     })
     drake.registered = true
   }
+
+  // convenience to set eventBus handlers via Object
+  on (handlerConfig = {}) {
+    let handlerNames = Object.keys(handlerConfig)
+
+    for (let handlerName of handlerNames) {
+      let handlerFunction = handlerConfig[handlerName]
+      this.eventBus.$on(handlerName, handlerFunction)
+    }
+  },
+
 
   destroy (name) {
     let bag = this.find(name)
