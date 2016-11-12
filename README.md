@@ -43,6 +43,96 @@ A bag must be of the form:
 
 This allows you to add bags dynamically/programatically if needed.
 
+### Binding models to dragable elements
+
+Please note that vue-dragula expects the `v-dragula` expression to be linked to an underlying model in the VM. When you move the elements in the UI you also rearrange the underlying model data (using `findModelForContainer`). 
+This is VERY POWERFUL!!
+
+Note that the special Vue events `removeModel` and `dropModel` are emitted as models are shifted around.
+
+```js
+    drake.on('remove', (el, container, source) => {
+      if (!drake.models) {
+        return
+      }
+      sourceModel = this.findModelForContainer(source, drake)
+      sourceModel.splice(dragIndex, 1)
+      drake.cancel(true)
+      this.eventBus.$emit('removeModel', [name, el, source, dragIndex])
+    })
+
+    drake.on('drag', (el, source) => {
+      dragElm = el
+      dragIndex = this.domIndexOf(el, source)
+    })
+
+    drake.on('drop', (dropElm, target, source) => {
+      if (!drake.models || !target) {
+        return
+      }
+      dropIndex = this.domIndexOf(dropElm, target)
+      sourceModel = this.findModelForContainer(source, drake)
+
+      if (target === source) {
+        sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0])
+      } else {
+        let notCopy = dragElm === dropElm
+        let targetModel = this.findModelForContainer(target, drake)
+        let dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]))
+
+        if (notCopy) {
+          waitForTransition(() => {
+            sourceModel.splice(dragIndex, 1)
+          })
+        }
+        targetModel.splice(dropIndex, 0, dropElmModel)
+        drake.cancel(true)
+      }
+      this.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex])
+    })
+    drake.registered = true
+  }
+```
+
+Each `bag` is setup to delegate dragula events to Vue eventbus events of the same name. This allows you to define custom event handling as regular Vue event handlers.
+
+```js
+  setupEvents (bag) {
+    bag.initEvents = true
+    let _this = this
+    let emitter = type => {
+      function replicate () {
+        let args = Array.prototype.slice.call(arguments)
+        _this.eventBus.$emit(type, [bag.name].concat(args))
+      }
+      bag.drake.on(type, replicate)
+    }
+    this.events.forEach(emitter)
+  }
+```
+
+### Customis DragulaService
+
+For even more customization, you can also subclass `DragulaService` or create your own, then pass a `createService` option for you install the plugin:
+
+```js
+import { DragulaService } from 'vue-dragula'
+
+class MyDragulaService extends DragulaService {
+  /// ...
+}
+
+function createService({name, eventBus, bags}) {
+  return new MyDragulaService({
+    name,
+    eventBus,
+    bags
+  })
+}
+
+Vue.use(VueDragula, { createService });
+```
+
 ## Install
 #### CommonJS
 

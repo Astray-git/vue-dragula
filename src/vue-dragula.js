@@ -5,9 +5,19 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
+function defaultCreateService({name, eventBus, bags}) {
+  return new DragulaService({
+    name,
+    eventBus,
+    bags
+  })
+}
+
 export default function (Vue, options = {}) {
   const eventBus = new Vue()
-  const service = new DragulaService({
+  let createService = options.createService || defaultCreateService
+
+  const service = createService({
     name: 'global.dragula',
     eventBus,
     bags: options.bags
