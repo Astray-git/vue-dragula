@@ -42,10 +42,15 @@ class DragulaService {
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 
+  bagNames() {
+    return this.bags.map(bag => bag.name)
+  }
+
   add (name, drake) {
-    this.log('add', name)
+    this.log('add (bag)', name, drake)
     let bag = this.find(name)
     if (bag) {
+      this.log('existing bags', this.bagNames())
       throw new Error('Bag named: "' + name + '" already exists for this service')
     }
     bag = {
@@ -63,7 +68,7 @@ class DragulaService {
   }
 
   find (name) {
-    this.log('find', name)
+    this.log('find (bag) by name', name)
     let bags = this.bags
     for (var i = 0; i < bags.length; i++) {
       if (bags[i].name === name) {
