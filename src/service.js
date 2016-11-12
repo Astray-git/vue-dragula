@@ -39,14 +39,14 @@ class DragulaService {
 
   log(event, ...args) {
     if (!this.logging) return
-    console.log('DragulaService:', event, ...args)
+    console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 
   add (name, drake) {
     this.log('add', name)
     let bag = this.find(name)
     if (bag) {
-      throw new Error('Bag named: "' + name + '" already exists.')
+      throw new Error('Bag named: "' + name + '" already exists for this service')
     }
     bag = {
       name,
