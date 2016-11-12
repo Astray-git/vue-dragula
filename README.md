@@ -12,18 +12,32 @@ Vue wrapper for [`dragula`][1].
 
 - Changed life cycle method `ready` to `mounted` with `$nextTick`
 - Add `$dragula` to Vue.prototype to make available on each component instance
-- Add ability to create DragulaServices per container.
-- Add ability to create and set eventbus per service, either shared or independent
-- Add methods on `$dragula`
-  - `create({name, eventBus})` : create new service
-  - `allOn(handlerConfig = {})` : add set of eventBus handlers to all services
-  - `service(name)` : access individual service
-- Make `bind` try to bind directive (with bags) to a matching named component service before falling back to bind to global dragula service.
+- Make `$dragula.$service` a shortcut to access key methods on global service
 
-The DragulaService now takes an options hash:
+- Add `service` property to `v-dragula` directive to indicate service to use for container
+- Add ability to add `DragulaService` per service name of component via `service="name"` on `v-dragula` element or by default use the global service.
+
+- Add ability to create and set `eventBus` per service, either as shared bus or independent
+- Add ability to set `bags` on creation of `DragulaService`
+- Add ability to create and use custom `DragulaService` via `createService`  plugin option
+- Add ability to create and use custom `eventBus` via `createEventBus` plugin option
+
+- Add methods on `$dragula`
+  - `create({name, eventBus, bags})` : to create a named service
+  - `create({names, ...})` : to create multiple services (`names`)
+  - `on(handlerConfig = {})` : add set of eventBus handlers to all services
+  - `service(name)` : access individual service
+  - `.services` : get list of all registered services
+  - `.serviceNames` : get list of names for all registered services
+
+- Make `bind` try to bind directive (with bags) to a matching named component service before falling back to bind to global dragula service.
+- Add detailed logging via `logging: true` option on plugin
+- Extracted common logic of directive functions into reusable functions
+
+The `DragulaService` now takes an options hash:
 
 ```js
-  constructor ({name, eventBus, bags}) {
+  constructor ({name, eventBus, bags, options}) {
     console.log('Create Dragula service')
     this.name = name
     this.bags = bags || [] // bag store
@@ -42,13 +56,19 @@ A bag must be of the form:
 ```
 
 This allows you to add bags dynamically/programatically if needed.
+The `drake` instance of each bag must be a dragula instance (with its own event handlers etc).
+
+```js
+bag.drake.on(type, replicate)
+```
 
 ### Binding models to dragable elements
 
-Please note that vue-dragula expects the `v-dragula` expression to be linked to an underlying model in the VM. When you move the elements in the UI you also rearrange the underlying model data (using `findModelForContainer`). 
-This is VERY POWERFUL!!
+Please note that `vue-dragula` expects the `v-dragula` binding expression to link to an underlying model in the VM. 
 
-Note that the special Vue events `removeModel` and `dropModel` are emitted as models are shifted around.
+When you move the elements in the UI you also rearrange the underlying model data (using `findModelForContainer`). This is VERY powerful!
+
+Note that the special Vue events `removeModel` and `dropModel` are emitted as models are operated on (using [splice](https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)).
 
 ```js
     drake.on('remove', (el, container, source) => {
@@ -94,7 +114,12 @@ Note that the special Vue events `removeModel` and `dropModel` are emitted as mo
   }
 ```
 
-Each `bag` is setup to delegate dragula events to Vue eventbus events of the same name. This allows you to define custom event handling as regular Vue event handlers.
+Please be advised not to change the default behavior of this key functionality.
+
+If you need more control over models (such as filtering, conditions etc.), use watchers on these models and then create derived models in response. 
+Keep the "raw" dragula models intact and in perfect sync with the models in the UI.
+
+Each `bag` is setup to delegate dragula events to the `eventBus` events of the same name. This lets you to define custom event handling as regular Vue event handlers.
 
 ```js
   setupEvents (bag) {
@@ -109,6 +134,17 @@ Each `bag` is setup to delegate dragula events to Vue eventbus events of the sam
     }
     this.events.forEach(emitter)
   }
+```
+
+### Logging
+
+You can now pass a `{logging: true}`
+
+```
+Vue.use(VueDragula, {
+  // ...
+  logging: true
+});
 ```
 
 ### Customis DragulaService
@@ -131,6 +167,26 @@ function createService({name, eventBus, bags}) {
 }
 
 Vue.use(VueDragula, { createService });
+```
+
+### Custom event bus
+
+You could create an event bus factory method to always log events emitted if logging is turned on.
+
+```js
+function createEventBus(Vue, options = {}) {
+  const eventBus = new Vue()
+  return {
+    $emit: function(event, args) {
+      if (options.logging) {
+        console.log('emit:', event, args)
+      }
+      eventBus.$emit(event, args)
+    }
+  })
+}
+
+Vue.use(VueDragula, { createService, createEventBus });
 ```
 
 ## Install

@@ -15,10 +15,10 @@ const waitForTransition = raf
     window.setTimeout(fn, 50)
   }
 
-// Use one Service per directive instance
 class DragulaService {
-  constructor ({name, eventBus, bags}) {
-    console.log('Create Dragula service')
+  constructor ({name, eventBus, bags, options}) {
+    this.options = options || {}
+    this.logging = options.logging
     this.name = name
     this.bags = bags || [] // bag store
     this.eventBus = eventBus
@@ -37,8 +37,13 @@ class DragulaService {
     ]
   }
 
+  log(event, ...args) {
+    if (!this.logging) return
+    console.log('DragulaService:', event, ...args)
+  }
+
   add (name, drake) {
-    console.log('Dragula: add', name)
+    this.log('add', name)
     let bag = this.find(name)
     if (bag) {
       throw new Error('Bag named: "' + name + '" already exists.')
@@ -58,7 +63,7 @@ class DragulaService {
   }
 
   find (name) {
-    console.log('Dragula: find', name)
+    this.log('find', name)
     let bags = this.bags
     for (var i = 0; i < bags.length; i++) {
       if (bags[i].name === name) {
@@ -68,7 +73,7 @@ class DragulaService {
   }
 
   handleModels (name, drake) {
-    console.log('Dragula: handleModels', name)
+    this.log('handleModels', name, drake)
 
     if (drake.registered) { // do not register events twice
       return
@@ -131,6 +136,7 @@ class DragulaService {
   }
 
   destroy (name) {
+    this.log('destroy', name)
     let bag = this.find(name)
     if (!bag) { return }
     let bagIndex = this.bags.indexOf(bag)
@@ -139,11 +145,13 @@ class DragulaService {
   }
 
   setOptions (name, options) {
+    this.log('setOptions', name, options)
     let bag = this.add(name, dragula(options))
     this.handleModels(name, bag.drake)
   }
 
   setupEvents (bag) {
+    this.log('setupEvents', bag)
     bag.initEvents = true
     let _this = this
     let emitter = type => {
@@ -164,6 +172,7 @@ class DragulaService {
   }
 
   findModelForContainer (container, drake) {
+    this.log('findModelForContainer', container, drake)
     return (this.findModelContainerByContainer(container, drake) || {}).model
   }
 
