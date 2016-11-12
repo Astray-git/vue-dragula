@@ -9,7 +9,8 @@ export default function (Vue, options = {}) {
   const eventBus = new Vue()
   const service = new DragulaService({
     name: 'global.dragula',
-    eventBus
+    eventBus,
+    bags: options.bags
   })
 
   let name = 'globalBag'
@@ -26,12 +27,14 @@ export default function (Vue, options = {}) {
       this.services = this.services || {};
       let containers = serviceOpts.containers || []
       let eventBus = serviceOpts.eventBus || eventBus
+      let bags = serviceOpts.bags || []
 
       for (let container of containers) {
         let name = container
         let service = new DragulaService({
           name,
-          eventBus
+          eventBus,
+          bags
         })
         this.services[name] = service
       }
@@ -39,7 +42,6 @@ export default function (Vue, options = {}) {
     },
     allOn: function(handlerConfig = {}) {
       let services = Object.values(this.services)
-      // TODO: must set this handlerConfig on all services of this.services
       for (let service of services) {
         service.on(handlerConfig)
       }

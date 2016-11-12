@@ -20,6 +20,29 @@ Vue wrapper for [`dragula`][1].
   - `service(name)` : access individual service
 - Make `bind` try to bind directive (with bags) to a matching named component service before falling back to bind to global dragula service.
 
+The DragulaService now takes an options hash:
+
+```js
+  constructor ({name, eventBus, bags}) {
+    console.log('Create Dragula service')
+    this.name = name
+    this.bags = bags || [] // bag store
+    this.eventBus = eventBus
+    ...
+  }
+```
+
+A bag must be of the form:
+
+```js
+  bag = {
+    name,
+    drake
+  }
+```
+
+This allows you to add bags dynamically/programatically if needed.
+
 ## Install
 #### CommonJS
 
