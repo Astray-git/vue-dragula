@@ -16,12 +16,13 @@ const waitForTransition = raf
   }
 
 class DragulaService {
-  constructor ({name, eventBus, bags, options}) {
+  constructor ({name, eventBus, bags, drake, options}) {
     this.options = options || {}
     this.logging = options.logging
     this.name = name
     this.bags = bags || [] // bag store
     this.eventBus = eventBus
+    this.drake = drake
     this.events = [
       'cancel',
       'cloned',
@@ -42,15 +43,16 @@ class DragulaService {
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 
-  bagNames() {
+  get bagNames() {
     return this.bags.map(bag => bag.name)
   }
 
   add (name, drake) {
+    drake = drake || this.drake
     this.log('add (bag)', name, drake)
     let bag = this.find(name)
     if (bag) {
-      this.log('existing bags', this.bagNames())
+      this.log('existing bags', this.bagNames
       throw new Error('Bag named: "' + name + '" already exists for this service')
     }
     bag = {
@@ -78,6 +80,7 @@ class DragulaService {
   }
 
   handleModels (name, drake) {
+    drake = drake || this.drake
     this.log('handleModels', name, drake)
 
     if (drake.registered) { // do not register events twice
@@ -177,11 +180,13 @@ class DragulaService {
   }
 
   findModelForContainer (container, drake) {
+    drake = drake || this.drake
     this.log('findModelForContainer', container, drake)
     return (this.findModelContainerByContainer(container, drake) || {}).model
   }
 
   findModelContainerByContainer (container, drake) {
+    drake = drake || this.drake
     if (!drake.models) {
       return
     }

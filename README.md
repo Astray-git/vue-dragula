@@ -21,6 +21,7 @@ Vue wrapper for [`dragula`][1].
 - Add ability to set `bags` on creation of `DragulaService`
 - Add ability to create and use custom `DragulaService` via `createService`  plugin option
 - Add ability to create and use custom `eventBus` via `createEventBus` plugin option
+- Add `.bagNames` getter on `DragulaService`
 
 - Add methods on `$dragula`
   - `create({name, eventBus, bags})` : to create a named service
@@ -186,7 +187,26 @@ function createEventBus(Vue, options = {}) {
   })
 }
 
-Vue.use(VueDragula, { createService, createEventBus });
+Vue.use(VueDragula, { createEventBus });
+```
+
+## TODO and Big Questions
+
+Why does the `DragulaService` take `drake` as the second argument for most methods? I would think there should be an instance variable `this.drake` which is used by default?
+
+Why do we use this pattern to only allow adding the diective element itself as a container. Why not using basic selectors to have more flexibility!?
+It is all very mysterious and weird to me still...
+
+```js
+  if (bag) {
+    drake = bag.drake
+    drake.containers.push(container)
+    return
+  }
+  drake = dragula({
+    containers: [container]
+  })
+  service.add(name, drake)
 ```
 
 ## Install
@@ -225,7 +245,7 @@ template:
 
 ## APIs
 
-You can access them from `Vue.vueDragula`
+You can access the main API from `Vue.$dragula` or from within a component via `this.$dragula`
 
 ### `options(name, options)`
 
