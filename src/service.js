@@ -43,6 +43,11 @@ class DragulaService {
     console.log(`DragulaService [${this.name}] :`, event, ...args)
   }
 
+  error(msg) {
+    console.error(msg)
+    throw new Error(msg)
+  }
+
   get bagNames() {
     return Object.keys(this.bags)
   }
@@ -52,8 +57,11 @@ class DragulaService {
     this.log('add (bag)', name, drake)
     let bag = this.find(name)
     if (bag) {
-      this.log('existing bags', this.bagNames
-      throw new Error('Bag named: "' + name + '" already exists for this service')
+      this.log('existing bags', this.bagNames)
+      let errMsg = `Bag named: "${name}" already exists for this service [${this.name}]. 
+      Most likely this error in cause by a race condition evaluating multiple template elements with 
+      the v-dragula directive having the same bag name. Please initialise the bag in the created() life cycle hook of the VM to fix this problem.`
+      this.error(msg)
     }
     this.bags[name] = drake
     if (drake.models) {

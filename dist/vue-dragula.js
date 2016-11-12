@@ -1226,14 +1226,16 @@ var require$$0$3 = Object.freeze({
 	    var name = _ref.name,
 	        eventBus = _ref.eventBus,
 	        bags = _ref.bags,
+	        drake = _ref.drake,
 	        options = _ref.options;
 	    classCallCheck(this, DragulaService);
 
 	    this.options = options || {};
 	    this.logging = options.logging;
 	    this.name = name;
-	    this.bags = bags || []; // bag store
+	    this.bags = bags = {}; // bag store
 	    this.eventBus = eventBus;
+	    this.drake = drake;
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 	  }
 
@@ -1248,21 +1250,26 @@ var require$$0$3 = Object.freeze({
 	        args[_key - 1] = arguments[_key];
 	      }
 
-	      (_console = console).log.apply(_console, ['DragulaService:', event].concat(args));
+	      (_console = console).log.apply(_console, ['DragulaService [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'error',
+	    value: function error(msg) {
+	      console.error(msg);
+	      throw new Error(msg);
 	    }
 	  }, {
 	    key: 'add',
 	    value: function add(name, drake) {
-	      this.log('add', name);
+	      drake = drake || this.drake;
+	      this.log('add (bag)', name, drake);
 	      var bag = this.find(name);
 	      if (bag) {
-	        throw new Error('Bag named: "' + name + '" already exists.');
+	        this.log('existing bags', this.bagNames);
+	        var errMsg = 'Bag named: "' + name + '" already exists for this service [' + this.name + ']. \n      Most likely this error in cause by a race condition evaluating multiple template elements with \n      the v-dragula directive having the same bag name. Please initialise the bag in the created() life cycle hook of the VM to fix this problem.';
+	        this.error(msg);
 	      }
-	      bag = {
-	        name: name,
-	        drake: drake
-	      };
-	      this.bags.push(bag);
+	      this.bags[name] = drake;
 	      if (drake.models) {
 	        this.handleModels(name, drake);
 	      }
@@ -1274,19 +1281,15 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'find',
 	    value: function find(name) {
-	      this.log('find', name);
-	      var bags = this.bags;
-	      for (var i = 0; i < bags.length; i++) {
-	        if (bags[i].name === name) {
-	          return bags[i];
-	        }
-	      }
+	      this.log('find (bag) by name', name);
+	      return this.bags[name];
 	    }
 	  }, {
 	    key: 'handleModels',
 	    value: function handleModels(name, drake) {
 	      var _this2 = this;
 
+	      drake = drake || this.drake;
 	      this.log('handleModels', name, drake);
 
 	      if (drake.registered) {
@@ -1383,16 +1386,25 @@ var require$$0$3 = Object.freeze({
 	      if (!bag) {
 	        return;
 	      }
-	      var bagIndex = this.bags.indexOf(bag);
-	      this.bags.splice(bagIndex, 1);
 	      bag.drake.destroy();
+	      this.delete(name);
+	    }
+	  }, {
+	    key: 'delete',
+	    value: function _delete(name) {
+	      delete this.bags[name];
 	    }
 	  }, {
 	    key: 'setOptions',
 	    value: function setOptions(name, options) {
 	      this.log('setOptions', name, options);
+	      if (!name) {
+	        console.error('setOptions must take the name of the bag to set options for');
+	        return this;
+	      }
 	      var bag = this.add(name, dragula$1(options));
 	      this.handleModels(name, bag.drake);
+	      return this;
 	    }
 	  }, {
 	    key: 'setupEvents',
@@ -1417,18 +1429,25 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'findModelForContainer',
 	    value: function findModelForContainer(container, drake) {
+	      drake = drake || this.drake;
 	      this.log('findModelForContainer', container, drake);
 	      return (this.findModelContainerByContainer(container, drake) || {}).model;
 	    }
 	  }, {
 	    key: 'findModelContainerByContainer',
 	    value: function findModelContainerByContainer(container, drake) {
+	      drake = drake || this.drake;
 	      if (!drake.models) {
 	        return;
 	      }
 	      return drake.models.find(function (model) {
 	        return model.container === container;
 	      });
+	    }
+	  }, {
+	    key: 'bagNames',
+	    get: function get() {
+	      return Object.keys(this.bags);
 	    }
 	  }]);
 	  return DragulaService;
@@ -1512,16 +1531,24 @@ var require$$0$3 = Object.freeze({
 	    }
 
 	    createClass(Dragula, [{
-	      key: 'createService',
-	      value: function createService() {
+	      key: 'optionsFor',
+	      value: function optionsFor(name) {
+	        var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	        this.service(name).setOptions(opts);
+	        return this;
+	      }
+	    }, {
+	      key: 'create',
+	      value: function create() {
 	        var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	        this._serviceMap = this._serviceMap || {};
 	        var names = serviceOpts.names || [];
 	        var name = serviceOpts.name || [];
+	        var bags = serviceOpts.bags || {};
 	        names = names || [name];
 	        var eventBus = serviceOpts.eventBus || eventBus;
-	        var bags = serviceOpts.bags || [];
 
 	        var _iteratorNormalCompletion = true;
 	        var _didIteratorError = false;
@@ -1537,7 +1564,12 @@ var require$$0$3 = Object.freeze({
 	              bags: bags,
 	              options: options
 	            });
+
 	            this._serviceMap[_name] = newService;
+
+	            if (bags) {
+	              this.bagsFor(_name, bags);
+	            }
 	          }
 	        } catch (err) {
 	          _didIteratorError = true;
@@ -1557,20 +1589,23 @@ var require$$0$3 = Object.freeze({
 	        return this;
 	      }
 	    }, {
-	      key: 'on',
-	      value: function on() {
-	        var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	      key: 'bagsFor',
+	      value: function bagsFor(name) {
+	        var bags = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	        var services = Object.values(this.serviceMap);
+	        var service = this.service(name);
+
+	        var bagNames = Object.keys(bags);
 	        var _iteratorNormalCompletion2 = true;
 	        var _didIteratorError2 = false;
 	        var _iteratorError2 = undefined;
 
 	        try {
-	          for (var _iterator2 = services[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var _service = _step2.value;
+	          for (var _iterator2 = bagNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var _bagName = _step2.value;
 
-	            _service.on(handlerConfig);
+	            var bagOpts = bags[_bagName];
+	            service.setOptions(_bagName, bagOpts);
 	          }
 	        } catch (err) {
 	          _didIteratorError2 = true;
@@ -1586,6 +1621,41 @@ var require$$0$3 = Object.freeze({
 	            }
 	          }
 	        }
+
+	        return this;
+	      }
+	    }, {
+	      key: 'on',
+	      value: function on() {
+	        var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	        var services = Object.values(this.serviceMap);
+	        var _iteratorNormalCompletion3 = true;
+	        var _didIteratorError3 = false;
+	        var _iteratorError3 = undefined;
+
+	        try {
+	          for (var _iterator3 = services[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	            var _service = _step3.value;
+
+	            _service.on(handlerConfig);
+	          }
+	        } catch (err) {
+	          _didIteratorError3 = true;
+	          _iteratorError3 = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	              _iterator3.return();
+	            }
+	          } finally {
+	            if (_didIteratorError3) {
+	              throw _iteratorError3;
+	            }
+	          }
+	        }
+
+	        return this;
 	      }
 	    }, {
 	      key: 'service',
@@ -1747,9 +1817,6 @@ var require$$0$3 = Object.freeze({
 	        });
 	      }
 	    },
-
-
-	    // Not sure to handle this with new design
 	    unbind: function unbind(container, binding, vnode) {
 	      logDir('unbind', container, binding, vnode);
 
