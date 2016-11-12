@@ -18,7 +18,7 @@ Vue wrapper for [`dragula`][1].
 - Add ability to add `DragulaService` per service name of component via `service="name"` on `v-dragula` element or by default use the global service.
 
 - Add ability to create and set `eventBus` per service, either as shared bus or independent
-- Add ability to set `bags` on creation of `DragulaService`
+- Add ability to set `bags` on creation of `DragulaService` via `bags` option
 - Add ability to create and use custom `DragulaService` via `createService`  plugin option
 - Add ability to create and use custom `eventBus` via `createEventBus` plugin option
 - Add `.bagNames` getter on `DragulaService`
@@ -27,6 +27,7 @@ Vue wrapper for [`dragula`][1].
   - `create({name, eventBus, bags})` : to create a named service
   - `create({names, ...})` : to create multiple services (`names`)
   - `on(handlerConfig = {})` : add set of eventBus handlers to all services
+  - `bagsFor` : configure a service with empty bags
   - `service(name)` : access individual service
   - `.services` : get list of all registered services
   - `.serviceNames` : get list of names for all registered services
@@ -190,12 +191,9 @@ function createEventBus(Vue, options = {}) {
 Vue.use(VueDragula, { createEventBus });
 ```
 
-## TODO and Big Questions
+## How do the bags work!?
 
-Why does the `DragulaService` take `drake` as the second argument for most methods? I would think there should be an instance variable `this.drake` which is used by default?
-
-Why do we use this pattern to only allow adding the diective element itself as a container. Why not using basic selectors to have more flexibility!?
-It is all very mysterious and weird to me still...
+In the directive `bind` we have the following core logic:
 
 ```js
   if (bag) {
@@ -208,6 +206,64 @@ It is all very mysterious and weird to me still...
   })
   service.add(name, drake)
 ```
+
+If the bag already exists, ie. `if (bag)` then we add the container directly into pre-existing bag created via `service.options` call (in `created` lifecycle hook). Otherwise we try to add it as a new bag and we could get into conflict if we have multiple bags added via directives that have not been pre-initialized in the VM. The conflict can be caused by race conditions, as the directives are evaluated asynchronously for enhanced view performance!
+
+Thanks to @Astray-git for [finally making me understand this](https://github.com/Astray-git/vue-dragula/issues/12#issuecomment-260134897)
+
+The correct way to use this plugin now:
+
+```js
+created () {
+  this.$dragula.create({
+    name: 'myService',
+    bags: {
+      'first-bag': {
+        copy: true
+      }
+    }
+  }).on({
+    // ... event handler map
+  })
+}
+```
+
+OR using `bagsFor` method
+
+```
+  this.$dragula.bagsFor('myService', {
+    'first-bag': {
+      copy: true
+    }
+  })
+}
+```
+
+This ensures that the `DragulaService` instance `myService` has been registered and contains one or more empty bags which are ready to be populated by containers to be used for drag'n drop by Dragula.
+
+``` html
+<div class="wrapper">
+  <div class="container" v-dragula="colOne" service="myService" bag="first-bag">
+    <!-- with click -->
+    <div v-for="text in colOne" @click="onClick">{{text}} [click me]</div>
+  </div>
+  <div class="container" v-dragula="colTwo" service="myService" bag="first-bag">
+    <div v-for="text in colTwo">{{text}}</div>
+  </div>
+</div>
+```
+
+Now when `v-dragula` directives are evaluated and bound to the component (via `bind`) they will each find the empty bag of that name and each push their `container` to the list of `drake.containers`.
+
+```js
+  if (bag) {
+    drake = bag.drake
+    drake.containers.push(container)
+    return
+  }
+```
+
+**Magic!!!**
 
 ## Install
 #### CommonJS

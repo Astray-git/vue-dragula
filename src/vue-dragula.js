@@ -57,13 +57,19 @@ export default function (Vue, options = {}) {
       }
     }
 
-    createService(serviceOpts = {}) {
+    optionsFor(name, opts = {}) {
+      this.service(name).setOptions(opts)
+      return this
+    }
+
+    create(serviceOpts = {}) {
       this._serviceMap = this._serviceMap || {};
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
+      let bags = serviceOpts.bags || {}
       names = names || [name]
       let eventBus = serviceOpts.eventBus || eventBus
-      let bags = serviceOpts.bags || []
+
 
       for (let name of names) {
         let newService = new DragulaService({
@@ -72,7 +78,23 @@ export default function (Vue, options = {}) {
           bags,
           options
         })
+
         this._serviceMap[name] = newService
+
+        if (bags) {
+          this.bagsFor(name, bags)
+        }
+      }
+      return this
+    }
+
+    bagsFor(name, bags = {}) {
+      let service = this.service(name)
+
+      let bagNames = Object.keys(bags)
+      for (let bagName of bagNames) {
+        let bagOpts = bags[bagName]
+        service.setOptions(bagName, bagOpts)
       }
       return this
     }
@@ -82,6 +104,7 @@ export default function (Vue, options = {}) {
       for (let service of services) {
         service.on(handlerConfig)
       }
+      return this
     }
 
     get serviceNames() {
@@ -231,7 +254,6 @@ export default function (Vue, options = {}) {
       }
     },
 
-    // Not sure to handle this with new design
     unbind (container, binding, vnode) {
       logDir('unbind', container, binding, vnode)
 

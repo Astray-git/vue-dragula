@@ -20,7 +20,7 @@ class DragulaService {
     this.options = options || {}
     this.logging = options.logging
     this.name = name
-    this.bags = bags || [] // bag store
+    this.bags = bags = {} // bag store
     this.eventBus = eventBus
     this.drake = drake
     this.events = [
@@ -44,7 +44,7 @@ class DragulaService {
   }
 
   get bagNames() {
-    return this.bags.map(bag => bag.name)
+    return Object.keys(this.bags)
   }
 
   add (name, drake) {
@@ -55,11 +55,7 @@ class DragulaService {
       this.log('existing bags', this.bagNames
       throw new Error('Bag named: "' + name + '" already exists for this service')
     }
-    bag = {
-      name,
-      drake
-    }
-    this.bags.push(bag)
+    this.bags[name] = drake
     if (drake.models) {
       this.handleModels(name, drake)
     }
@@ -71,12 +67,7 @@ class DragulaService {
 
   find (name) {
     this.log('find (bag) by name', name)
-    let bags = this.bags
-    for (var i = 0; i < bags.length; i++) {
-      if (bags[i].name === name) {
-        return bags[i]
-      }
-    }
+    return this.bags[name]
   }
 
   handleModels (name, drake) {
@@ -147,15 +138,23 @@ class DragulaService {
     this.log('destroy', name)
     let bag = this.find(name)
     if (!bag) { return }
-    let bagIndex = this.bags.indexOf(bag)
-    this.bags.splice(bagIndex, 1)
     bag.drake.destroy()
+    this.delete(name)
+  }
+
+  delete(name) {
+    delete this.bags[name]
   }
 
   setOptions (name, options) {
     this.log('setOptions', name, options)
+    if (!name) {
+      console.error('setOptions must take the name of the bag to set options for')
+      return this
+    }
     let bag = this.add(name, dragula(options))
     this.handleModels(name, bag.drake)
+    return this
   }
 
   setupEvents (bag) {
