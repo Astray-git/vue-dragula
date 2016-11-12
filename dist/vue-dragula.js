@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v1.3.0
+ * vue-dragula v2.0.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1225,6 +1225,7 @@ var require$$0$3 = Object.freeze({
 	  function DragulaService(Vue) {
 	    classCallCheck(this, DragulaService);
 
+	    console.log('Create Dragula service');
 	    this.bags = []; // bag store
 	    this.eventBus = new Vue();
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
@@ -1233,6 +1234,7 @@ var require$$0$3 = Object.freeze({
 	  createClass(DragulaService, [{
 	    key: 'add',
 	    value: function add(name, drake) {
+	      console.log('Dragula: add', name);
 	      var bag = this.find(name);
 	      if (bag) {
 	        throw new Error('Bag named: "' + name + '" already exists.');
@@ -1253,6 +1255,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'find',
 	    value: function find(name) {
+	      console.log('Dragula: find', name);
 	      var bags = this.bags;
 	      for (var i = 0; i < bags.length; i++) {
 	        if (bags[i].name === name) {
@@ -1264,6 +1267,8 @@ var require$$0$3 = Object.freeze({
 	    key: 'handleModels',
 	    value: function handleModels(name, drake) {
 	      var _this2 = this;
+
+	      console.log('Dragula: handleModels', name);
 
 	      if (drake.registered) {
 	        // do not register events twice
@@ -1372,11 +1377,14 @@ var require$$0$3 = Object.freeze({
 	}
 
 	function VueDragula (Vue) {
+	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
 	  var service = new DragulaService(Vue);
 
 	  var name = 'globalBag';
 	  var drake = void 0;
 
+	  console.log('Adding Dragula as plugin...');
 	  Vue.$dragula = {
 	    options: service.setOptions.bind(service),
 	    find: service.find.bind(service),
@@ -1388,6 +1396,8 @@ var require$$0$3 = Object.freeze({
 	    params: ['bag'],
 
 	    bind: function bind(container, binding, vnode) {
+	      console.log('bind Dragula', container);
+
 	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
 	      : this.params.bag; // Vue 1
 	      if (!vnode) {
@@ -1410,6 +1420,8 @@ var require$$0$3 = Object.freeze({
 	      service.handleModels(name, drake);
 	    },
 	    update: function update(container, binding, vnode, oldVnode) {
+	      console.log('update Dragula', container);
+
 	      var newValue = vnode ? binding.value // Vue 2
 	      : container; // Vue 1
 	      if (!newValue) {
@@ -1442,6 +1454,8 @@ var require$$0$3 = Object.freeze({
 	      }
 	    },
 	    unbind: function unbind(container, binding, vnode) {
+	      console.log('unbind Dragula', container);
+
 	      var unbindBagName = 'globalBag';
 	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
 	      : this.params.bag; // Vue 1
@@ -1470,7 +1484,8 @@ var require$$0$3 = Object.freeze({
 	    console.warn('[vue-dragula] already installed.');
 	  }
 
-	  VueDragula(Vue);
+	  console.log('Add Dragula plugin:', options);
+	  VueDragula(Vue, options);
 	}
 
 	plugin.version = '1.0.0';
