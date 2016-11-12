@@ -263,7 +263,32 @@ Now when `v-dragula` directives are evaluated and bound to the component (via `b
   }
 ```
 
-**Magic!!!**
+### Advanced drake Magic
+
+Note that dragula containers should always be linked to an underlying model. 
+If you really need to add a container/model binding programmatically, try this:
+
+```js
+  drake.models.push({
+    model: model,
+    container: container
+  })
+```
+
+Here the `model` is a pointer to a list in the model data of your VM. The container is a DOM element which contains a list of elements that an be dragged and rearranged and their ordering reflected (mirrored) in the model.
+
+To access and modify a particular drake models and containers:
+
+```js
+let drake = this.$dragula.service('my-list').find('third-bag')
+drake.models.push({
+  model: model,
+  container: container
+})
+drake.containers.push(container)
+```
+
+You need a deep understanding of the inner workings of Dragula in order to get this right, so do this at your own risk and experiment.
 
 ## Install
 #### CommonJS
