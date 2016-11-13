@@ -1,6 +1,5 @@
 import dragula from 'dragula'
 import { DragulaService } from './service'
-import merge from 'lodash.merge'
 
 if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
@@ -68,7 +67,7 @@ export default function (Vue, options = {}) {
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
       let bags = serviceOpts.bags || {}
-      let opts = merge(options, serviceOpts)
+      let opts = Object.assign({}, options, serviceOpts)
       names = names || [name]
       let eventBus = serviceOpts.eventBus || eventBus
 
