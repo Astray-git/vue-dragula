@@ -8,22 +8,26 @@ Vue wrapper for [`dragula`][1].
 - Make it better work with Vue 2.x
 - Make service and directive more flexible and granular as needed
 
-### Changelog
+### Changelog (since 1.x)
 
 - Changed life cycle method `ready` to `mounted` with `$nextTick`
 - Add `$dragula` to Vue.prototype to make available on each component instance
 - Make `$dragula.$service` a shortcut to access key methods on global service
-
 - Add `service` property to `v-dragula` directive to indicate service to use for container
 - Add ability to add `DragulaService` per service name of component via `service="name"` on `v-dragula` element or by default use the global service.
-
 - Add ability to create and set `eventBus` per service, either as shared bus or independent
 - Add ability to set `bags` on creation of `DragulaService` via `bags` option
 - Add ability to create and use custom `DragulaService` via `createService`  plugin option
 - Add ability to create and use custom `eventBus` via `createEventBus` plugin option
+- Make `bind` try to bind directive (with bags) to a matching named component service before falling back to bind to global dragula service.
+- Add detailed logging via `logging: true` option on plugin
+- Extracted common logic of directive functions into reusable functions
 - Add `.bagNames` getter on `DragulaService`
 
-- Add methods on `$dragula`
+### $dragula
+
+`$dragula` named service API
+
   - `create({name, eventBus, bags})` : to create a named service
   - `create({names, ...})` : to create multiple services (`names`)
   - `on(handlerConfig = {})` : add set of eventBus handlers to all services
@@ -32,9 +36,7 @@ Vue wrapper for [`dragula`][1].
   - `.services` : get list of all registered services
   - `.serviceNames` : get list of names for all registered services
 
-- Make `bind` try to bind directive (with bags) to a matching named component service before falling back to bind to global dragula service.
-- Add detailed logging via `logging: true` option on plugin
-- Extracted common logic of directive functions into reusable functions
+### DragulaService
 
 The `DragulaService` now takes an options hash:
 
@@ -64,9 +66,7 @@ The `drake` instance of each bag must be a dragula instance (with its own event 
 bag.drake.on(type, replicate)
 ```
 
-### TODO
-
-Currently the only models allowed are flat lists or perhaps nested lists.
+## Model mechanics
 
 We should ability to customize the drake even handler mechanics on the underlying models to allow for other types of models.
 
@@ -103,12 +103,10 @@ a `children` key. We should be able to drag elements to modify the node tree stu
 }
 ```
 
-In this example we should be able to move a form input from one form container node into a another. But perhaps this is already possible, just by setting `v-dragula` to `children[0] and children[1]`. Then we use the rest of the node tree to visualize the various different nodes :)
+In this example we should be able to move a form input from one form container node into a another. This is already possible, just by setting `v-dragula` to `children[0] and children[1]`. Then we use the rest of the node tree to visualize the various different nodes :)
 
 However we might still want more fine grained control on how nodes are added/removed from the lists. Some lists might only allow ned nodes added at the front or the back, some might have validation rules etc.
-
-Currently we use global variables to handle this, which is not very flexible.
-This works since the `drag` event is always called first and will set the `dragIndex` which is scope referenced by `remove`. Instead we should move it to a class with shared instance variables. Then we can substitute the drag handlers.
+We have enabled this via a dragHandler instance of a DragHandler class which encapsulates the states and logic of dragging and re/shuffling the underlying models. From `handleModels` method of `DragulaService`:
 
 ```js
   const dragHandler = this.createDragHandler({ ctx: this, name, drake })
@@ -118,11 +116,10 @@ This works since the `drag` event is always called first and will set the `dragI
   drake.on('drop', dragHandler.drop)
 ```
 
-This has now been refactored in the `DragHandler` class (see `/src/drag-handler.js`.
+Key model operation methods in `DragHandler`
 
-Key model operation methods:
-- on `remove`: `removeModel`
-- on `drop`: `dropModelSame` and `insertModel`
+- on `remove` drag action: `removeModel`
+- on `drop` drag action: `dropModelSame` and `insertModel`
 
 ```js
   removeModel(el, container, source) {
@@ -138,7 +135,7 @@ Key model operation methods:
   }
 ```
 
-The `DragHandler` class can be subclassed and customized as needed. You can then pass a factory method `createDragHandler` as a service option.
+The `DragHandler` class can now easily be subclassed and the model operations customized as needed. You can then pass a factory method `createDragHandler` as a service option.
 
 ```js
 function createDragHandler({ctx, name, drake}) {
@@ -422,7 +419,7 @@ template:
 
 ## APIs
 
-You can access the main API from `Vue.$dragula` or from within a component via `this.$dragula`
+You can access the main API from `Vue.$dragula.$service` or from within a component via `this.$dragula.$service` (using global service). For using named services that have more fine grained control, see above (note: designed for Vue2).
 
 ### `options(name, options)`
 
@@ -432,7 +429,7 @@ Set dragula options, refer to: https://github.com/bevacqua/dragula#optionscontai
 new Vue({
   ...
   created: function () {
-    Vue.vueDragula.options('my-bag', {
+    Vue.$dragula.$service.options('my-bag', {
       direction: 'vertical'
     })
   }
@@ -454,7 +451,7 @@ For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
 ...
 new Vue({
   ready: function () {
-    Vue.vueDragula.eventBus.$on('drop', function (args) {
+    Vue.$dragula.$service.eventBus.$on('drop', function (args) {
       console.log('drop: ' + args[0])
     })
   }
@@ -485,80 +482,6 @@ How to view the example? Start a simple Http server, like the pythong [simplehtt
 
 The open in browser: `open localhost:8000`
 
-## Issues on Vue 2
+## License
 
-```
-  function ready () {
-    
-    domReadyTime = Date.now() ;
-      
-    // First, check if it's a PRE and exit if not
-      var bodyChildren = document.body.childNodes ;
-```
-
-```
-Exception:
-TypeError: Cannot read property 'childNodes' of null at HTMLDocument.ready
-```       
-
-### Recommendations
-
-Basically, the example needs to use proper `.vue` templates to work as discussed [here](https://github.com/vuejs-templates/webpack/issues/215)
-
-So please update example to use webpack or better yet, create demo app using basic Vue2 setup with webpack :)  
-
-I've started such a [demo app](https://github.com/kristianmandrup/vue2-dragula-demo) but having problems :() 
-
-I don't yet understand the Vue2 plugin architecture! Please help out...
-
-### Vue 2 Plugin
-
-Trying to add dragula as a [Vue 2 plugin](https://vuejs.org/v2/guide/plugins.html)
-
-```js
-  // 3. inject some component options
-  Vue.mixin({
-    created: function () {
-      // something logic ...
-    }
-    ...
-  })
-  // 4. add an instance method
-  Vue.prototype.$myMethod = function (options) {
-    // something logic ...
-  }  
-```
-
-Looks correct to add `$dragula` to `Vue.prototype` as shown [here](https://github.com/aarondfrancis/vue-model/blob/master/src/VueModel.js#L99)
-
-```js
-function plugin (Vue, options = {}) {
-  if (plugin.installed) {
-    console.warn('[vue-dragula] already installed.')
-  }
-
-  console.log('Add Dragula plugin:', options)
-  VueDragula(Vue, options)
-}
-```
-
-
-We then call the function in `vue-dragula.js` which adds `$dragula` to `Vue.prototype` in accordance with Vue 2 specs on plugins.
-What is missing!?!?! WTF!!!
-
-```js
-export default function (Vue, options = {}) {
-  const service = new DragulaService(Vue)
-
-  let name = 'globalBag'
-  let drake
-
-  console.log('Adding Dragula as plugin...')
-  Vue.$dragula = {
-    options: service.setOptions.bind(service),
-    find: service.find.bind(service),
-    eventBus: service.eventBus
-  }
-  Vue.prototype.$dragula = Vue.$dragula 
-}
-```
+MIT
