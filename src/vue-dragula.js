@@ -55,6 +55,9 @@ export default function (Vue, options = {}) {
         find: service.find.bind(service),
         eventBus: this.eventBus = service.eventBus
       }
+
+      // alias
+      this.createServices = this.createService
     }
 
     optionsFor(name, opts = {}) {
@@ -62,7 +65,7 @@ export default function (Vue, options = {}) {
       return this
     }
 
-    create(serviceOpts = {}) {
+    createService(serviceOpts = {}) {
       this._serviceMap = this._serviceMap || {};
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
@@ -76,8 +79,7 @@ export default function (Vue, options = {}) {
         let newService = new DragulaService({
           name,
           eventBus,
-          bags,
-          otions: opts
+          options: opts
         })
 
         this._serviceMap[name] = newService
@@ -92,21 +94,36 @@ export default function (Vue, options = {}) {
     bagsFor(name, bags = {}) {
       let service = this.service(name)
 
+      if (Array.isArray(bags)) {
+        // turn Array into object of [name]: true
+        bags = bags.reduce((obj, name) => {
+          obj[name] = true
+          return obj
+        }, {})
+      }
+
       let bagNames = Object.keys(bags)
       for (let bagName of bagNames) {
         let bagOpts = bags[bagName]
         if (bagOpts === true) {
           bagOpts = {}
         }
+
         service.setOptions(bagName, bagOpts)
       }
       return this
     }
 
-    on(handlerConfig = {}) {
-      let services = Object.values(this.serviceMap)
-      for (let service of services) {
-        service.on(handlerConfig)
+    on(name, handlerConfig = {}) {
+      if (typeof name === 'object') {
+        handlerConfig = name
+        // add event handlers for all services
+        let services = Object.values(this.serviceMap)
+        for (let service of services) {
+          service.on(handlerConfig)
+        }
+      } else {
+        this.service(name).on(handlerConfig)
       }
       return this
     }
