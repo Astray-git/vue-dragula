@@ -8,6 +8,10 @@ Vue wrapper for [`dragula`][1].
 - Make it work with Vue 2.x
 - Make service and directive more flexible with granular control as needed
 
+## TODO
+
+Remove the concept of bags. Not needed now that drakes of a service are stored in a Hash object. We just have services with drakes that have drag options, containers and models. Much simpler to understand!
+
 ## Install
 #### CommonJS
 
@@ -142,11 +146,12 @@ The `DragulaService` constructor takes the following deconstructed arguments
   }
 ```
 
-Bags are stored as an Oobject, where each key is the name of the bag that points to a dragula instance (`drake`). The `drake` instance can have event handlers, models, containers etc. See [dragula options](https://github.com/bevacqua/dragula#dragulacontainers-options)
+Bags are stored as an Object `{}`, where each key is the name of a bag that points to a `drake` (dragula instance). The `drake` can have event handlers, models, containers etc. See [dragula options](https://github.com/bevacqua/dragula#dragulacontainers-options)
 
 ## Model mechanics
 
-The drake event handlers have default mechanics for how to operated on the underlyng models. These can be customized as needed.
+The `drake` event handlers have default mechanics for how to operated on the underlyng models. These can be customized as needed.
+
 A common schenario is to have a tree of node objects, where each node has 
 a `children` key. We should be able to drag elements to modify the node tree stucture.
 
@@ -183,18 +188,20 @@ a `children` key. We should be able to drag elements to modify the node tree stu
 In this example we should be able to move a form input specication object from one form container node into another. This is possible simply by 
 setting `<template>` elements with `v-dragula` directive to point to `children[0].children` and `children[1].children` respectively. We can use the rest of the node tree data to visualize the various different nodes, f.ex for a Visual editor/IDE :)
 
-You might want more fine grained control on how nodes are added/removed from the various lists. Some lists might only allow that nodes added at the front or back, some might have validation/business rules etc.
+### DragHandler for fine-grained control
 
-These scenarios are enabled via a `dragHandler` instance of a `DragHandler` class which encapsulates the states and logic of dragging and re-shuffling the underlying models.
+For fine-grained control on how nodes are added/removed from the various lists. Some lists might only allow that nodes added at the front or back, some might have validation/business rules etc.
 
-Sample code taken from the `handleModels` method of `DragulaService`
+The `dragHandler` instance of the `DragHandler` class encapsulates the states and logic of dragging and re-arranging the underlying models.
+
+Sample code taken from `handleModels` method of `DragulaService`
 
 ```js
-  const dragHandler = this.createDragHandler({ ctx: this, name, drake })
+const dragHandler = this.createDragHandler({ ctx: this, name, drake })
 
-  drake.on('remove', dragHandler.remove)
-  drake.on('drag', dragHandler.drag)
-  drake.on('drop', dragHandler.drop)
+drake.on('remove', dragHandler.remove)
+drake.on('drag', dragHandler.drag)
+drake.on('drop', dragHandler.drop)
 ```
 
 Key model operation methods in `DragHandler`
@@ -202,20 +209,20 @@ Key model operation methods in `DragHandler`
 - on `drop` drag action: `dropModelSame` and `insertModel`
 
 ```js
-  removeModel(el, container, source) {
-    this.sourceModel.splice(this.dragIndex, 1)
-  }
+removeModel(el, container, source) {
+  this.sourceModel.splice(this.dragIndex, 1)
+}
 
-  dropModelSame(dropElm, target, source) {
-    this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
-  }
+dropModelSame(dropElm, target, source) {
+  this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
+}
 
-  insertModel(targetModel, dropElmModel) {
-    targetModel.splice(this.dropIndex, 0, dropElmModel)
-  }
+insertModel(targetModel, dropElmModel) {
+  targetModel.splice(this.dropIndex, 0, dropElmModel)
+}
 ```
 
-The `DragHandler` class can be subclassed and the model operations customized as needed. You can pass a custom factory method `createDragHandler` as a service option.
+The `DragHandler` class can be subclassed and the model operations customized as needed. You can pass a custom factory method `createDragHandler` as a service option. Let's assume we have a `MyDragHandler` class which extends `DragHandler` and overrides key methods with custom logic. Now lets use it!
 
 ```js
 function createDragHandler({ctx, name, drake}) {

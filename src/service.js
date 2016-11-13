@@ -64,7 +64,7 @@ export class DragulaService {
       this.handleModels(name, drake)
     }
     if (!bag.initEvents) {
-      this.setupEvents(bag)
+      this.setupEvents(name, bag)
     }
     return bag
   }
@@ -105,7 +105,7 @@ export class DragulaService {
     this.log('destroy', name)
     let bag = this.find(name)
     if (!bag) { return }
-    bag.drake.destroy()
+    bag.destroy()
     this.delete(name)
   }
 
@@ -120,20 +120,20 @@ export class DragulaService {
       return this
     }
     let bag = this.add(name, dragula(options))
-    this.handleModels(name, bag.drake)
+    this.handleModels(name, bag)
     return this
   }
 
-  setupEvents (bag) {
-    this.log('setupEvents', bag)
+  setupEvents (name, bag) {
+    this.log('setupEvents', name, bag)
     bag.initEvents = true
     let _this = this
     let emitter = type => {
       function replicate () {
         let args = Array.prototype.slice.call(arguments)
-        _this.eventBus.$emit(type, [bag.name].concat(args))
+        _this.eventBus.$emit(type, [name].concat(args))
       }
-      bag.drake.on(type, replicate)
+      bag.on(type, replicate)
     }
     this.events.forEach(emitter)
   }
