@@ -5,25 +5,25 @@ Vue wrapper for [`dragula`][1].
 
 ## Status
 
-- Make it work with Vue 2.x
-- Make service and directive more flexible with granular control as needed
+- Works with [Vue 2.x](https://medium.com/the-vue-point/vue-2-0-is-here-ef1f26acf4b8#.c089dtgol)
+- Service and directive are more flexible and powerful
+- Removed concept of bags. References named drakes
+- [Vue2 demo app]((https://github.com/kristianmandrup/vue2-dragula-demo/))
 
-## TODO
-
-Remove the concept of bags. Not needed now that drakes of a service are stored in a Hash object. We just have services with drakes that have drag options, containers and models. Much simpler to understand!
+See more details in the [[Changelog.md]]
 
 ## Install
 #### CommonJS
 
-Available through npm as `vue-dragula`.
+Will soon be available through npm (or yarn) as `vue2-dragula`.
 
   ``` bash
-  npm install vue-dragula
+  npm install kristianmandrup/vue-dragula#dev
   ```
 
   ``` js
   var Vue = require('vue');
-  var VueDragula = require('vue-dragula');
+  var VueDragula = require('vue2-dragula');
 
   Vue.use(VueDragula);
   ```
@@ -38,11 +38,11 @@ In a template
 
 ``` html
 <div class="wrapper">
-  <div class="container" v-dragula="colOne" bag="first-bag">
+  <div class="container" v-dragula="colOne" drake="first">
     <!-- with click -->
     <div v-for="text in colOne" @click="onClick">{{text}} [click me]</div>
   </div>
-  <div class="container" v-dragula="colTwo" bag="first-bag">
+  <div class="container" v-dragula="colTwo" drake="first">
     <div v-for="text in colTwo">{{text}}</div>
   </div>
 </div>
@@ -61,7 +61,7 @@ Set [dragula options](https://github.com/bevacqua/dragula#optionscontainers)
 new Vue({
   ...
   created: function () {
-    Vue.$dragula.$service.options('my-bag', {
+    Vue.$dragula.$service.options('my-drake', {
       direction: 'vertical'
     })
   }
@@ -70,10 +70,7 @@ new Vue({
 
 ### `find(name)`
 
-Returns the `bag` for a `drake` instance. Contains the following properties:
-
-- `name` the name that identifies the bag
-- `drake` the raw `drake` instance
+Returns the named `drake` instance of the service.
 
 ## Events
 For [drake events](https://github.com/bevacqua/dragula#drakeon-events)
@@ -94,8 +91,8 @@ new Vue({
 
 | Event Name |      Listener Arguments      |  Event Description |
 | :-------------: |:-------------:| -----|
-| dropModel | bagName, el, target, source, dropIndex | model was synced, dropIndex exposed |
-| removeModel | bagName, el, container, removeIndex | model was synced, removeIndex exposed |
+| dropModel | drakeName, el, target, source, dropIndex | model was synced, dropIndex exposed |
+| removeModel | drakeName, el, container, removeIndex | model was synced, removeIndex exposed |
 
 [1]: https://github.com/bevacqua/dragula
 
@@ -113,21 +110,21 @@ How to view the example? Start a simple Http server, like the pythong [simplehtt
 
 The open in browser: `open localhost:8000`
 
-Note: The included `/example` demo is for Vue 1.x only. For Vue 2.x try [this demo](https://github.com/kristianmandrup/vue2-dragula-demo/)
+[Vue 2.x demo app](https://github.com/kristianmandrup/vue2-dragula-demo/)
 
 ## The API in more depth
 
-Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive. Add named service(s) via `this.$dragula.createService` and initialise with the bags you want to use (see more on bags below).
+Access `this.$dragula` in your `created () { ... }` life cycle hook of any component which uses the `v-dragula` directive. Add named service(s) via `this.$dragula.createService` and initialise with the drakes you want to use.
 
 ### $dragula
 
 `$dragula` service API
 
-  - `createService({name, eventBus, bags})` : to create a named service
+  - `createService({name, eventBus, drakes})` : to create a named service
   - `createServices({names, ...})` : to create multiple services (`names` list)
   - `on(handlerConfig = {})` : add event handlers to all services
   - `on(name, handlerConfig = {})` : add event handlers to specific service
-  - `bagsFor(name, bags = {})` : configure a service with empty bags
+  - `drakesFor(name, drakes = {})` : configure a service with drakes
   - `service(name)` : get named service
   - `.services` : get list of all registered services
   - `.serviceNames` : get list of names for all registered services
@@ -137,16 +134,15 @@ Access `this.$dragula` in your `created () { ... }` life cycle hook of any compo
 The `DragulaService` constructor takes the following deconstructed arguments
 
 ```js
-  constructor ({name, eventBus, bags, options}) {
-    console.log('Create Dragula service')
-    this.name = name
-    this.bags = bags || {} // bag store
-    this.eventBus = eventBus
+class DragulaService {
+  constructor ({name, eventBus, drakes, options}) {
     ...
   }
+  // ...
+}
 ```
 
-Bags are stored as an Object `{}`, where each key is the name of a bag that points to a `drake` (dragula instance). The `drake` can have event handlers, models, containers etc. See [dragula options](https://github.com/bevacqua/dragula#dragulacontainers-options)
+Drakes are indexed by name in an Object `{}`. Each key is the name of a drake that points to a `drake` (ie. dragula instance). The `drake` can have event handlers, models, containers etc. See [dragula options](https://github.com/bevacqua/dragula#dragulacontainers-options)
 
 ## Model mechanics
 
@@ -236,21 +232,23 @@ export default {
       //...
     }
   },
-  // setup services with bags
+  // setup services with drakes
   created () {
     this.$dragula.create({
       name: 'myService',
       createDragHandler,
-      bags: {
-        third: true
+      drakes: {
+        third: true,
+        fourth: {
+          copy : true
+        }
       }
     })
   }
 }
 ```
 
-Note that you can set a bag to `true` as a convenience to create it with default bag options (ie. default dragula behavior). 
-This is a simply a shorthand for `third: {}`. You can also pass an array of bag names, ie `bags: ['third', 'fourth']`
+Note that you can set a drake to `true` as a convenience to create it with default options. This is a shorthand for `third: {}`. You can also pass an array of drake names, ie `drakes: ['third', 'fourth']`
 
 ### Binding models to dragable elements
 
@@ -262,22 +260,7 @@ Note that special Vue events `removeModel` and `dropModel` are emitted as model 
 
 If you need more advanced control over models (such as filtering, conditions etc.) you can use watchers on these models and then create derived models in response, perhaps dispatching local model state to a [Vuex](vuex.vuejs.org) store. We recommend keeping the "raw" dragula models intact and in sync with the UI models/elements.
 
-Each `bag` is setup to delegate dragula events to the Vue event system (`$emit`) ie. to use `eventBus` to send events of the same name. This lets you define custom drag'n drop event handling as regular Vue event handlers.
-
-```js
-  setupEvents (bag) {
-    bag.initEvents = true
-    let _this = this
-    let emitter = type => {
-      function replicate () {
-        let args = Array.prototype.slice.call(arguments)
-        _this.eventBus.$emit(type, [bag.name].concat(args))
-      }
-      bag.drake.on(type, replicate)
-    }
-    this.events.forEach(emitter)
-  }
-```
+Each `drake` is setup to delegate dragula events to the Vue event system (`$emit`) ie. to use `eventBus` to send events of the same name. This lets you define custom drag'n drop event handling as regular Vue event handlers.
 
 ### Logging
 
@@ -303,11 +286,11 @@ class MyDragulaService extends DragulaService {
   /// ...
 }
 
-function createService({name, eventBus, bags}) {
+function createService({name, eventBus, drakes}) {
   return new MyDragulaService({
     name,
     eventBus,
-    bags
+    drakes
   })
 }
 
@@ -335,13 +318,12 @@ function createEventBus(Vue, options = {}) {
 Vue.use(VueDragula, { createEventBus });
 ```
 
-## How do the bags work!?
+## How do the drakes work!?
 
 In the directive `bind` function we have the following core logic:
 
 ```js
-  if (bag) {
-    drake = bag.drake
+  if (drake) {
     drake.containers.push(container)
     return
   }
@@ -351,24 +333,24 @@ In the directive `bind` function we have the following core logic:
   service.add(name, drake)
 ```
 
-If the bag already exists, ie. `if (bag) { ... }` then we add the container directly into a pre-existing bag created in the `created` lifecycle hook of the component. Otherwise it tries to add it as a new bag. 
+If the drake already exists, ie. `if (drake) { ... }` then we add the container directly into a pre-existing drake created in the `created` lifecycle hook of the component. Otherwise it tries to register as a new named drake in the service `drakes` map (Object). 
 
-*Bags conflict warning*
+*Drake conflict warning*
 
-You can get a conflict if multiple bags are added via directives, and the bags have not been pre-initialized in the VM. This conflict is caused by race conditions, as the directives are evaluated asynchronously for enhanced view performance!
+You can get a conflict if one or more drakes are added via directives, and the drakes have not been pre-configured in the VM. This conflict is caused by race conditions, as the directives are evaluated asynchronously for enhanced view performance!
 
 Thanks to [@Astray-git](https://github.com/Astray-git) for [making this clear](https://github.com/Astray-git/vue-dragula/issues/12#issuecomment-260134897)
 
-Note: He is the original author of this plugin :)
+Note: *@Astray-git* is the original author of this plugin :)
 
-Setup a service with one or more bags ready for drag'n drop action
+Setup a service with one or more drakes ready for drag'n drop action
 
 ```js
 created () {
   this.$dragula.create({
     name: 'myService',
-    bags: {
-      'first-bag': {
+    drakes: {
+      'first': {
         copy: true
       }
     }
@@ -378,36 +360,35 @@ created () {
 }
 ```
 
-You can also use the `bagsFor` method on a registered service.
+You can also use the `drakesFor` method on a registered service.
 
 ```
-  this.$dragula.bagsFor('myService', {
-    'first-bag': {
+  this.$dragula.drakesFor('myService', {
+    'first': {
       copy: true
     }
   })
 }
 ```
 
-This ensures that the `DragulaService` instance `myService` is registered and contains one or more bags which are ready to be populated by `v-dragula` container elements.
+This ensures that the `DragulaService` instance `myService` is registered and contains one or more drakes which are ready to be populated by `v-dragula` container elements.
 
 ``` html
 <div class="wrapper">
-  <div class="container" v-dragula="colOne" service="myService" bag="first-bag">
+  <div class="container" v-dragula="colOne" service="myService" drake="first">
     <!-- with click -->
     <div v-for="text in colOne" @click="onClick">{{text}} [click me]</div>
   </div>
-  <div class="container" v-dragula="colTwo" service="myService" bag="first-bag">
+  <div class="container" v-dragula="colTwo" service="myService" drake="first">
     <div v-for="text in colTwo">{{text}}</div>
   </div>
 </div>
 ```
 
-Now when the `v-dragula` directives are evaluated and bound to the component (via directive `bind` method), they will each find an existing bag of that name and push their `container` to the list of `drake.containers`.
+Now when the `v-dragula` directives are evaluated and bound to the component (via directive `bind` method), they will each find an existing drake of that name and push their `container` to the list of `drake.containers`.
 
 ```js
-  if (bag) {
-    drake = bag.drake
+  if (drake) {
     drake.containers.push(container)
     return
   }
@@ -431,7 +412,7 @@ Here the `model` is a pointer to a list in the model data of your VM. The contai
 To access and modify a particular drake models and containers:
 
 ```js
-let drake = this.$dragula.service('my-list').find('third-bag')
+let drake = this.$dragula.service('my-list').find('third')
 drake.models.push({
   model: model,
   container: container

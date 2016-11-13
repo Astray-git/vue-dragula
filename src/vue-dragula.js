@@ -6,11 +6,11 @@ if (!dragula) {
 }
 
 const defaults = {
-  createService: function ({name, eventBus, bags}) {
+  createService: function ({name, eventBus, drakes}) {
     return new DragulaService({
       name,
       eventBus,
-      bags
+      drakes
     })
   },
   createEventBus: function(Vue, options = {}) {
@@ -39,10 +39,10 @@ export default function (Vue, options = {}) {
   const service = createService({
     name: 'global.dragula',
     eventBus,
-    bags: options.bags
+    drakes: options.drakes
   })
 
-  let name = 'globalBag'
+  let globalName = 'globalDrake'
   let drake
 
   class Dragula {
@@ -69,7 +69,7 @@ export default function (Vue, options = {}) {
       this._serviceMap = this._serviceMap || {};
       let names = serviceOpts.names || []
       let name = serviceOpts.name || []
-      let bags = serviceOpts.bags || {}
+      let drakes = serviceOpts.drakes || {}
       let opts = Object.assign({}, options, serviceOpts)
       names = names || [name]
       let eventBus = serviceOpts.eventBus || eventBus
@@ -84,32 +84,32 @@ export default function (Vue, options = {}) {
 
         this._serviceMap[name] = newService
 
-        if (bags) {
-          this.bagsFor(name, bags)
+        if (drakes) {
+          this.drakesFor(name, drakes)
         }
       }
       return this
     }
 
-    bagsFor(name, bags = {}) {
+    drakesFor(name, drakes = {}) {
       let service = this.service(name)
 
-      if (Array.isArray(bags)) {
+      if (Array.isArray(drakes)) {
         // turn Array into object of [name]: true
-        bags = bags.reduce((obj, name) => {
+        drakes = drakes.reduce((obj, name) => {
           obj[name] = true
           return obj
         }, {})
       }
 
-      let bagNames = Object.keys(bags)
-      for (let bagName of bagNames) {
-        let bagOpts = bags[bagName]
-        if (bagOpts === true) {
-          bagOpts = {}
+      let drakeNames = Object.keys(drakes)
+      for (let drakeName of drakeNames) {
+        let drakeOpts = drakes[drakeName]
+        if (drakeOpts === true) {
+          drakeOpts = {}
         }
 
-        service.setOptions(bagName, bagOpts)
+        service.setOptions(drakeName, drakeOpts)
       }
       return this
     }
@@ -154,11 +154,11 @@ export default function (Vue, options = {}) {
   function findService(name, vnode, serviceName) {
     // first try to register on DragulaService of component
     if (vnode) {
-      let $dragulaOfComponent = vnode.context.$dragula
-      if ($dragulaOfComponent) {
+      let dragula = vnode.context.$dragula
+      if (dragula) {
         logDir('trying to find and use component service')
 
-        let componentService = $dragulaOfComponent.services[serviceName]
+        let componentService = dragula.services[serviceName]
         if (componentService) {
           logDir('using component service', componentService)
           return componentService
@@ -169,34 +169,34 @@ export default function (Vue, options = {}) {
     return service.find(name, vnode)
   }
 
-  function findBag(name, vnode, serviceName) {
+  function findDrake(name, vnode, serviceName) {
     return findService(name, vnode, serviceName).find(name, vnode)
   }
 
   function calcNames(name, vnode, ctx) {
-    const bagName = vnode
-      ? vnode.data.attrs.bag // Vue 2
-      : this.params.bag // Vue 1
+    const drakeName = vnode
+      ? vnode.data.attrs.drake // Vue 2
+      : this.params.drake // Vue 1
 
     const serviceName = vnode
       ? vnode.data.attrs.service // Vue 2
       : this.params.service // Vue 1
 
-    if (bagName !== undefined && bagName.length !== 0) {
-      name = bagName
+    if (drakeName !== undefined && drakeName.length !== 0) {
+      name = drakeName
     }
-    return {name, bagName, serviceName}
+    return {name, drakeName, serviceName}
   }
 
   Vue.directive('dragula', {
-    params: ['bag', 'service'],
+    params: ['drake', 'service'],
 
     bind (container, binding, vnode) {
       logDir('bind', container, binding, vnode)
 
-      const { name, bagName, serviceName } = calcNames('globalBag', vnode, this)
+      const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
-      const bag = service.find(name, vnode)
+      const drake = service.find(name, vnode)
 
       if (!vnode) {
         container = this.el // Vue 1
@@ -207,24 +207,23 @@ export default function (Vue, options = {}) {
           name: serviceName,
           instance: service
         },
-        bag: {
-          name: bagName,
-          instance: bag
+        drake: {
+          name: drakeName,
+          instance: drake
         },
         container
       })
 
-      if (bag) {
-        drake = bag.drake
+      if (drake) {
         drake.containers.push(container)
         return
       }
-      drake = dragula({
+      let newDrake = dragula({
         containers: [container]
       })
-      service.add(name, drake)
+      service.add(name, newDrake)
 
-      service.handleModels(name, drake)
+      service.handleModels(name, newDrake)
     },
 
     update (container, binding, vnode, oldVnode) {
@@ -235,11 +234,10 @@ export default function (Vue, options = {}) {
         : container // Vue 1
       if (!newValue) { return }
 
-      const { name, bagName, serviceName } = calcNames('globalBag', vnode, this)
+      const { name, drakeName, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
-      const bag = service.find(name, vnode)
+      const drake = service.find(name, vnode)
 
-      drake = bag.drake
       if (!drake.models) {
         drake.models = []
       }
@@ -255,9 +253,9 @@ export default function (Vue, options = {}) {
           name: serviceName,
           instance: service
         },
-        bag: {
-          name: bagName,
-          instance: bag
+        drake: {
+          name: drakeName,
+          instance: drake
         },
         container,
         modelContainer
@@ -278,23 +276,22 @@ export default function (Vue, options = {}) {
     unbind (container, binding, vnode) {
       logDir('unbind', container, binding, vnode)
 
-      const { name, serviceName } = calcNames('globalBag', vnode, this)
+      const { name, serviceName } = calcNames(globalName, vnode, this)
       const service = findService(name, vnode, serviceName)
-      const bag = service.find(name, vnode)
+      const drake = service.find(name, vnode)
 
       logDir({
         service: {
           name: serviceName,
           instance: service
         },
-        bag: {
-          name: bagName,
-          instance: bag
+        drake: {
+          name: drakeName,
+          instance: drake
         },
         container
       })
 
-      var drake = bag.drake
       if (!drake) { return }
 
       var containerIndex = drake.containers.indexOf(container)

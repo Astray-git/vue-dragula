@@ -1337,18 +1337,17 @@ var require$$0$3 = Object.freeze({
 	  function DragulaService(_ref2) {
 	    var name = _ref2.name,
 	        eventBus = _ref2.eventBus,
-	        bags = _ref2.bags,
-	        drake = _ref2.drake,
+	        drakes = _ref2.drakes,
 	        options = _ref2.options;
 	    classCallCheck(this, DragulaService);
 
 	    this.options = options || {};
 	    this.logging = options.logging;
 	    this.name = name;
-	    this.bags = bags = {}; // bag store
+	    this.drakes = drakes = {}; // drake store
 	    this.eventBus = eventBus;
-	    this.drake = drake;
 	    this.createDragHandler = options.createDragHandler || createDragHandler;
+
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 	  }
 
@@ -1372,37 +1371,44 @@ var require$$0$3 = Object.freeze({
 	      throw new Error(msg);
 	    }
 	  }, {
+	    key: '_validate',
+	    value: function _validate(method, name) {
+	      if (!name) {
+	        this.error(method + ' must take a drake name as the first argument');
+	      }
+	    }
+	  }, {
 	    key: 'add',
 	    value: function add(name, drake) {
-	      drake = drake || this.drake;
-	      this.log('add (bag)', name, drake);
-	      var bag = this.find(name);
-	      if (bag) {
-	        this.log('existing bags', this.bagNames);
-	        var errMsg = 'Bag named: "' + name + '" already exists for this service [' + this.name + ']. \n      Most likely this error in cause by a race condition evaluating multiple template elements with \n      the v-dragula directive having the same bag name. Please initialise the bag in the created() life cycle hook of the VM to fix this problem.';
+	      this.log('add (drake)', name, drake);
+	      this._validate('add', name);
+	      if (this.find(name)) {
+	        this.log('existing drakes', this.drakeNames);
+	        var errMsg = 'Drake named: "' + name + '" already exists for this service [' + this.name + ']. \n      Most likely this error in cause by a race condition evaluating multiple template elements with \n      the v-dragula directive having the same drake name. Please initialise the drake in the created() life cycle hook of the VM to fix this problem.';
 	        this.error(msg);
 	      }
-	      this.bags[name] = drake;
+
+	      this.drakes[name] = drake;
 	      if (drake.models) {
 	        this.handleModels(name, drake);
 	      }
-	      if (!bag.initEvents) {
-	        this.setupEvents(name, bag);
+	      if (!drake.initEvents) {
+	        this.setupEvents(name, drake);
 	      }
-	      return bag;
+	      return drake;
 	    }
 	  }, {
 	    key: 'find',
 	    value: function find(name) {
-	      this.log('find (bag) by name', name);
-	      return this.bags[name];
+	      this.log('find (drake) by name', name);
+	      this._validate('find', name);
+	      return this.drakes[name];
 	    }
 	  }, {
 	    key: 'handleModels',
 	    value: function handleModels(name, drake) {
-	      drake = drake || this.drake;
 	      this.log('handleModels', name, drake);
-
+	      this._validate('handleModels', name);
 	      if (drake.registered) {
 	        // do not register events twice
 	        return;
@@ -1456,42 +1462,41 @@ var require$$0$3 = Object.freeze({
 	    key: 'destroy',
 	    value: function destroy(name) {
 	      this.log('destroy', name);
-	      var bag = this.find(name);
-	      if (!bag) {
+	      this._validate('destroy', name);
+	      var drake = this.find(name);
+	      if (!drake) {
 	        return;
 	      }
-	      bag.destroy();
-	      this.delete(name);
+	      drake.destroy();
+	      this._delete(name);
 	    }
 	  }, {
-	    key: 'delete',
+	    key: '_delete',
 	    value: function _delete(name) {
-	      delete this.bags[name];
+	      delete this.drakes[name];
 	    }
 	  }, {
 	    key: 'setOptions',
 	    value: function setOptions(name, options) {
 	      this.log('setOptions', name, options);
-	      if (!name) {
-	        console.error('setOptions must take the name of the bag to set options for');
-	        return this;
-	      }
-	      var bag = this.add(name, dragula$1(options));
-	      this.handleModels(name, bag);
+	      this._validate('setOptions', name);
+	      var drake = this.add(name, dragula$1(options));
+	      this.handleModels(name, drake);
 	      return this;
 	    }
 	  }, {
 	    key: 'setupEvents',
-	    value: function setupEvents(name, bag) {
-	      this.log('setupEvents', name, bag);
-	      bag.initEvents = true;
+	    value: function setupEvents(name, drake) {
+	      this.log('setupEvents', name, drake);
+	      this._validate('setupEvents', name);
+	      drake.initEvents = true;
 	      var _this = this;
 	      var emitter = function emitter(type) {
 	        function replicate() {
 	          var args = Array.prototype.slice.call(arguments);
 	          _this.eventBus.$emit(type, [name].concat(args));
 	        }
-	        bag.on(type, replicate);
+	        drake.on(type, replicate);
 	      };
 	      this.events.forEach(emitter);
 	    }
@@ -1503,14 +1508,12 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'findModelForContainer',
 	    value: function findModelForContainer(container, drake) {
-	      drake = drake || this.drake;
 	      this.log('findModelForContainer', container, drake);
 	      return (this.findModelContainerByContainer(container, drake) || {}).model;
 	    }
 	  }, {
 	    key: 'findModelContainerByContainer',
 	    value: function findModelContainerByContainer(container, drake) {
-	      drake = drake || this.drake;
 	      if (!drake.models) {
 	        return;
 	      }
@@ -1519,9 +1522,9 @@ var require$$0$3 = Object.freeze({
 	      });
 	    }
 	  }, {
-	    key: 'bagNames',
+	    key: 'drakeNames',
 	    get: function get() {
-	      return Object.keys(this.bags);
+	      return Object.keys(this.drakes);
 	    }
 	  }]);
 	  return DragulaService;
@@ -1535,12 +1538,12 @@ var require$$0$3 = Object.freeze({
 	  createService: function createService(_ref) {
 	    var name = _ref.name,
 	        eventBus = _ref.eventBus,
-	        bags = _ref.bags;
+	        drakes = _ref.drakes;
 
 	    return new DragulaService({
 	      name: name,
 	      eventBus: eventBus,
-	      bags: bags
+	      drakes: drakes
 	    });
 	  },
 	  createEventBus: function createEventBus(Vue) {
@@ -1584,10 +1587,10 @@ var require$$0$3 = Object.freeze({
 	  var service = createService({
 	    name: 'global.dragula',
 	    eventBus: eventBus,
-	    bags: options.bags
+	    drakes: options.drakes
 	  });
 
-	  var name = 'globalBag';
+	  var globalName = 'globalDrake';
 	  var drake = void 0;
 
 	  var Dragula = function () {
@@ -1623,7 +1626,7 @@ var require$$0$3 = Object.freeze({
 	        this._serviceMap = this._serviceMap || {};
 	        var names = serviceOpts.names || [];
 	        var name = serviceOpts.name || [];
-	        var bags = serviceOpts.bags || {};
+	        var drakes = serviceOpts.drakes || {};
 	        var opts = Object.assign({}, options, serviceOpts);
 	        names = names || [name];
 	        var eventBus = serviceOpts.eventBus || eventBus;
@@ -1644,8 +1647,8 @@ var require$$0$3 = Object.freeze({
 
 	            this._serviceMap[_name] = newService;
 
-	            if (bags) {
-	              this.bagsFor(_name, bags);
+	            if (drakes) {
+	              this.drakesFor(_name, drakes);
 	            }
 	          }
 	        } catch (err) {
@@ -1666,35 +1669,35 @@ var require$$0$3 = Object.freeze({
 	        return this;
 	      }
 	    }, {
-	      key: 'bagsFor',
-	      value: function bagsFor(name) {
-	        var bags = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+	      key: 'drakesFor',
+	      value: function drakesFor(name) {
+	        var drakes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	        var service = this.service(name);
 
-	        if (Array.isArray(bags)) {
+	        if (Array.isArray(drakes)) {
 	          // turn Array into object of [name]: true
-	          bags = bags.reduce(function (obj, name) {
+	          drakes = drakes.reduce(function (obj, name) {
 	            obj[name] = true;
 	            return obj;
 	          }, {});
 	        }
 
-	        var bagNames = Object.keys(bags);
+	        var drakeNames = Object.keys(drakes);
 	        var _iteratorNormalCompletion2 = true;
 	        var _didIteratorError2 = false;
 	        var _iteratorError2 = undefined;
 
 	        try {
-	          for (var _iterator2 = bagNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	            var _bagName = _step2.value;
+	          for (var _iterator2 = drakeNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var _drakeName = _step2.value;
 
-	            var bagOpts = bags[_bagName];
-	            if (bagOpts === true) {
-	              bagOpts = {};
+	            var drakeOpts = drakes[_drakeName];
+	            if (drakeOpts === true) {
+	              drakeOpts = {};
 	            }
 
-	            service.setOptions(_bagName, bagOpts);
+	            service.setOptions(_drakeName, drakeOpts);
 	          }
 	        } catch (err) {
 	          _didIteratorError2 = true;
@@ -1785,11 +1788,11 @@ var require$$0$3 = Object.freeze({
 	  function findService(name, vnode, serviceName) {
 	    // first try to register on DragulaService of component
 	    if (vnode) {
-	      var $dragulaOfComponent = vnode.context.$dragula;
-	      if ($dragulaOfComponent) {
+	      var _dragula = vnode.context.$dragula;
+	      if (_dragula) {
 	        logDir('trying to find and use component service');
 
-	        var componentService = $dragulaOfComponent.services[serviceName];
+	        var componentService = _dragula.services[serviceName];
 	        if (componentService) {
 	          logDir('using component service', componentService);
 	          return componentService;
@@ -1800,36 +1803,36 @@ var require$$0$3 = Object.freeze({
 	    return service.find(name, vnode);
 	  }
 
-	  function findBag(name, vnode, serviceName) {
+	  function findDrake(name, vnode, serviceName) {
 	    return findService(name, vnode, serviceName).find(name, vnode);
 	  }
 
 	  function calcNames(name, vnode, ctx) {
-	    var bagName = vnode ? vnode.data.attrs.bag // Vue 2
-	    : this.params.bag; // Vue 1
+	    var drakeName = vnode ? vnode.data.attrs.drake // Vue 2
+	    : this.params.drake; // Vue 1
 
 	    var serviceName = vnode ? vnode.data.attrs.service // Vue 2
 	    : this.params.service; // Vue 1
 
-	    if (bagName !== undefined && bagName.length !== 0) {
-	      name = bagName;
+	    if (drakeName !== undefined && drakeName.length !== 0) {
+	      name = drakeName;
 	    }
-	    return { name: name, bagName: bagName, serviceName: serviceName };
+	    return { name: name, drakeName: drakeName, serviceName: serviceName };
 	  }
 
 	  Vue.directive('dragula', {
-	    params: ['bag', 'service'],
+	    params: ['drake', 'service'],
 
 	    bind: function bind(container, binding, vnode) {
 	      logDir('bind', container, binding, vnode);
 
-	      var _calcNames = calcNames('globalBag', vnode, this),
+	      var _calcNames = calcNames(globalName, vnode, this),
 	          name = _calcNames.name,
-	          bagName = _calcNames.bagName,
+	          drakeName = _calcNames.drakeName,
 	          serviceName = _calcNames.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
-	      var bag = service.find(name, vnode);
+	      var drake = service.find(name, vnode);
 
 	      if (!vnode) {
 	        container = this.el; // Vue 1
@@ -1840,24 +1843,23 @@ var require$$0$3 = Object.freeze({
 	          name: serviceName,
 	          instance: service
 	        },
-	        bag: {
-	          name: bagName,
-	          instance: bag
+	        drake: {
+	          name: drakeName,
+	          instance: drake
 	        },
 	        container: container
 	      });
 
-	      if (bag) {
-	        drake = bag.drake;
+	      if (drake) {
 	        drake.containers.push(container);
 	        return;
 	      }
-	      drake = dragula$1({
+	      var newDrake = dragula$1({
 	        containers: [container]
 	      });
-	      service.add(name, drake);
+	      service.add(name, newDrake);
 
-	      service.handleModels(name, drake);
+	      service.handleModels(name, newDrake);
 	    },
 	    update: function update(container, binding, vnode, oldVnode) {
 	      logDir('update', container, binding, vnode);
@@ -1868,15 +1870,14 @@ var require$$0$3 = Object.freeze({
 	        return;
 	      }
 
-	      var _calcNames2 = calcNames('globalBag', vnode, this),
+	      var _calcNames2 = calcNames(globalName, vnode, this),
 	          name = _calcNames2.name,
-	          bagName = _calcNames2.bagName,
+	          drakeName = _calcNames2.drakeName,
 	          serviceName = _calcNames2.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
-	      var bag = service.find(name, vnode);
+	      var drake = service.find(name, vnode);
 
-	      drake = bag.drake;
 	      if (!drake.models) {
 	        drake.models = [];
 	      }
@@ -1892,9 +1893,9 @@ var require$$0$3 = Object.freeze({
 	          name: serviceName,
 	          instance: service
 	        },
-	        bag: {
-	          name: bagName,
-	          instance: bag
+	        drake: {
+	          name: drakeName,
+	          instance: drake
 	        },
 	        container: container,
 	        modelContainer: modelContainer
@@ -1914,26 +1915,25 @@ var require$$0$3 = Object.freeze({
 	    unbind: function unbind(container, binding, vnode) {
 	      logDir('unbind', container, binding, vnode);
 
-	      var _calcNames3 = calcNames('globalBag', vnode, this),
+	      var _calcNames3 = calcNames(globalName, vnode, this),
 	          name = _calcNames3.name,
 	          serviceName = _calcNames3.serviceName;
 
 	      var service = findService(name, vnode, serviceName);
-	      var bag = service.find(name, vnode);
+	      var drake = service.find(name, vnode);
 
 	      logDir({
 	        service: {
 	          name: serviceName,
 	          instance: service
 	        },
-	        bag: {
-	          name: bagName,
-	          instance: bag
+	        drake: {
+	          name: drakeName,
+	          instance: drake
 	        },
 	        container: container
 	      });
 
-	      var drake = bag.drake;
 	      if (!drake) {
 	        return;
 	      }
