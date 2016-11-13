@@ -23,7 +23,7 @@ export class DragHandler {
     this.domIndexOf = ctx.domIndexOf
   }
 
-  remove (el, container, source) => {
+  remove (el, container, source) {
     if (!this.drake.models) {
       return
     }
@@ -38,7 +38,7 @@ export class DragHandler {
     this.dragIndex = this.domIndexOf(el, source)
   }
 
-  drop(dropElm, target, source) {
+  drop (dropElm, target, source) {
     if (!this.drake.models || !target) {
       return
     }
@@ -68,7 +68,7 @@ export class DragHandler {
   }
 
   get jsonDropElmModel() {
-    return JSON.parse(JSON.stringify(this.sourceModel[this.dragIndex])
+    return JSON.parse(JSON.stringify(this.sourceModel[this.dragIndex]))
   }
 }
 
