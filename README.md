@@ -111,28 +111,34 @@ Currently we use global variables to handle this, which is not very flexible.
 This works since the `drag` event is always called first and will set the `dragIndex` which is scope referenced by `remove`. Instead we should move it to a class with shared instance variables. Then we can substitute the drag handlers.
 
 ```js
-  let dragElm
-  let dragIndex
-  let dropIndex
-  let sourceModel
+  const dragHandler = this.createDragHandler({ ctx: this, name, drake })
 
-  drake.on('remove', (el, container, source) => {
-    if (!drake.models) {
-      return
-    }
-    sourceModel = this.findModelForContainer(source, drake)
-    sourceModel.splice(dragIndex, 1)
-    drake.cancel(true)
-    this.eventBus.$emit('removeModel', [name, el, source, dragIndex])
-  })
-
-  drake.on('drag', (el, source) => {
-    dragElm = el
-    dragIndex = this.domIndexOf(el, source)
-  })
+  drake.on('remove', dragHandler.remove)
+  drake.on('drag', dragHandler.drag)
+  drake.on('drop', dragHandler.drop)
 ```
 
-This has now been refactored in the `DragHandler` class (see `/src/drag-handler.js`. This class can be subclassed and customized as needed. You can then pass a factory method `createDragHandler` as a service option.
+This has now been refactored in the `DragHandler` class (see `/src/drag-handler.js`.
+
+Key model operation methods:
+- on `remove`: `removeModel`
+- on `drop`: `dropModelSame` and `insertModel`
+
+```js
+  removeModel(el, container, source) {
+    this.sourceModel.splice(this.dragIndex, 1)
+  }
+
+  dropModelSame(dropElm, target, source) {
+    this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
+  }
+
+  insertModel(targetModel, dropElmModel) {
+    targetModel.splice(this.dropIndex, 0, dropElmModel)
+  }
+```
+
+The `DragHandler` class can be subclassed and customized as needed. You can then pass a factory method `createDragHandler` as a service option.
 
 ```js
 function createDragHandler({ctx, name, drake}) {

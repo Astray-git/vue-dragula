@@ -1,5 +1,5 @@
 /*!
- * vue-dragula v2.0.0
+ * vue-dragula v2.1.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
@@ -1237,13 +1237,50 @@ var require$$0$3 = Object.freeze({
 	  }
 
 	  createClass(DragHandler, [{
+	    key: 'removeModel',
+	    value: function removeModel(el, container, source) {
+	      this.sourceModel.splice(this.dragIndex, 1);
+	    }
+	  }, {
+	    key: 'dropModelSame',
+	    value: function dropModelSame(dropElm, target, source) {
+	      this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0]);
+	    }
+	  }, {
+	    key: 'insertModel',
+	    value: function insertModel(targetModel, dropElmModel) {
+	      targetModel.splice(this.dropIndex, 0, dropElmModel);
+	    }
+	  }, {
+	    key: 'dropModelTarget',
+	    value: function dropModelTarget(dropElm, target, source) {
+	      var _this = this;
+
+	      var notCopy = this.dragElm === dropElm;
+	      var targetModel = this.findModelForContainer(target, this.drake);
+	      var dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel;
+
+	      if (notCopy) {
+	        waitForTransition(function () {
+	          _this.sourceModel.splice(_this.dragIndex, 1);
+	        });
+	      }
+	      this.insertModel(targetModel, dropElmModel);
+	      this.drake.cancel(true);
+	    }
+	  }, {
+	    key: 'dropModel',
+	    value: function dropModel(dropElm, target, source) {
+	      target === source ? this.dropModelSame(dropElm, target, source) : this.dropModelTarget(dropElm, target, source);
+	    }
+	  }, {
 	    key: 'remove',
 	    value: function remove(el, container, source) {
 	      if (!this.drake.models) {
 	        return;
 	      }
 	      this.sourceModel = this.findModelForContainer(source, this.drake);
-	      this.sourceModel.splice(this.dragIndex, 1);
+	      this.removeModel(el, container, source);
 	      this.drake.cancel(true);
 	      this.eventBus.$emit('removeModel', [this.name, el, source, this.dragIndex]);
 	    }
@@ -1256,29 +1293,12 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'drop',
 	    value: function drop(dropElm, target, source) {
-	      var _this = this;
-
 	      if (!this.drake.models || !target) {
 	        return;
 	      }
 	      this.dropIndex = this.domIndexOf(dropElm, target);
 	      this.sourceModel = this.findModelForContainer(source, this.drake);
-
-	      if (target === source) {
-	        thissourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0]);
-	      } else {
-	        var notCopy = this.dragElm === dropElm;
-	        var targetModel = this.findModelForContainer(target, this.drake);
-	        var dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel;
-
-	        if (notCopy) {
-	          waitForTransition(function () {
-	            _this.sourceModel.splice(_this.dragIndex, 1);
-	          });
-	        }
-	        targetModel.splice(this.dropIndex, 0, dropElmModel);
-	        this.drake.cancel(true);
-	      }
+	      this.dropModel(dropElm, target, source);
 	      this.eventBus.$emit('dropModel', [this.name, dropElm, target, source, this.dropIndex]);
 	    }
 	  }, {

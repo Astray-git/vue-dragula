@@ -23,12 +23,43 @@ export class DragHandler {
     this.domIndexOf = ctx.domIndexOf
   }
 
+  removeModel(el, container, source) {
+    this.sourceModel.splice(this.dragIndex, 1)
+  }
+
+  dropModelSame(dropElm, target, source) {
+    this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
+  }
+
+  insertModel(targetModel, dropElmModel) {
+    targetModel.splice(this.dropIndex, 0, dropElmModel)
+  }
+
+  dropModelTarget(dropElm, target, source) {
+    let notCopy = this.dragElm === dropElm
+    let targetModel = this.findModelForContainer(target, this.drake)
+    let dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel
+
+    if (notCopy) {
+      waitForTransition(() => {
+        this.sourceModel.splice(this.dragIndex, 1)
+      })
+    }
+    this.insertModel(targetModel, dropElmModel)
+    this.drake.cancel(true)
+  }
+
+  dropModel(dropElm, target, source) {
+    target === source ? this.dropModelSame(dropElm, target, source) : this.dropModelTarget(dropElm, target, source)
+  }
+
+
   remove (el, container, source) {
     if (!this.drake.models) {
       return
     }
     this.sourceModel = this.findModelForContainer(source, this.drake)
-    this.sourceModel.splice(this.dragIndex, 1)
+    this.removeModel(el, container, source)
     this.drake.cancel(true)
     this.eventBus.$emit('removeModel', [this.name, el, source, this.dragIndex])
   }
@@ -44,22 +75,7 @@ export class DragHandler {
     }
     this.dropIndex = this.domIndexOf(dropElm, target)
     this.sourceModel = this.findModelForContainer(source, this.drake)
-
-    if (target === source) {
-      thissourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0])
-    } else {
-      let notCopy = this.dragElm === dropElm
-      let targetModel = this.findModelForContainer(target, this.drake)
-      let dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel
-
-      if (notCopy) {
-        waitForTransition(() => {
-          this.sourceModel.splice(this.dragIndex, 1)
-        })
-      }
-      targetModel.splice(this.dropIndex, 0, dropElmModel)
-      this.drake.cancel(true)
-    }
+    this.dropModel(dropElm, target, source)
     this.eventBus.$emit('dropModel', [this.name, dropElm, target, source, this.dropIndex])
   }
 
