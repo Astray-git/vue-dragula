@@ -4,18 +4,13 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-const raf = window.requestAnimationFrame
-const waitForTransition = raf
-  ? function (fn) {
-    raf(() => {
-      raf(fn)
-    })
-  }
-  : function (fn) {
-    window.setTimeout(fn, 50)
-  }
+import { DragHandler } from './drag-handler'
 
-class DragulaService {
+function createDragHandler({ctx, name, drake}) {
+  return new DragHandler({ ctx, name, drake })
+}
+
+export class DragulaService {
   constructor ({name, eventBus, bags, drake, options}) {
     this.options = options || {}
     this.logging = options.logging
@@ -23,6 +18,7 @@ class DragulaService {
     this.bags = bags = {} // bag store
     this.eventBus = eventBus
     this.drake = drake
+    this.createDragHandler = options.createDragHandler || createDragHandler
     this.events = [
       'cancel',
       'cloned',
@@ -85,50 +81,13 @@ class DragulaService {
     if (drake.registered) { // do not register events twice
       return
     }
-    let dragElm
-    let dragIndex
-    let dropIndex
-    let sourceModel
 
-    drake.on('remove', (el, container, source) => {
-      if (!drake.models) {
-        return
-      }
-      sourceModel = this.findModelForContainer(source, drake)
-      sourceModel.splice(dragIndex, 1)
-      drake.cancel(true)
-      this.eventBus.$emit('removeModel', [name, el, source, dragIndex])
-    })
+    const dragHandler = this.createDragHandler({ ctx: this, name, drake })
 
-    drake.on('drag', (el, source) => {
-      dragElm = el
-      dragIndex = this.domIndexOf(el, source)
-    })
+    drake.on('remove', dragHandler.remove)
+    drake.on('drag', dragHandler.drag)
+    drake.on('drop', dragHandler.drop)
 
-    drake.on('drop', (dropElm, target, source) => {
-      if (!drake.models || !target) {
-        return
-      }
-      dropIndex = this.domIndexOf(dropElm, target)
-      sourceModel = this.findModelForContainer(source, drake)
-
-      if (target === source) {
-        sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0])
-      } else {
-        let notCopy = dragElm === dropElm
-        let targetModel = this.findModelForContainer(target, drake)
-        let dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]))
-
-        if (notCopy) {
-          waitForTransition(() => {
-            sourceModel.splice(dragIndex, 1)
-          })
-        }
-        targetModel.splice(dropIndex, 0, dropElmModel)
-        drake.cancel(true)
-      }
-      this.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex])
-    })
     drake.registered = true
   }
 
@@ -201,4 +160,3 @@ class DragulaService {
   }
 }
 
-export default DragulaService

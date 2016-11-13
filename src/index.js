@@ -13,9 +13,9 @@ plugin.version = '1.0.0'
 
 export default plugin
 
-// make it possible to subclass service
-import { default as DService } from './service'
-export const DragulaService = DService
+// make it possible to subclass service and drag handler
+export { DragulaService } from './service'
+export { DragHandler } from './drag-handler'
 
 if (typeof define === 'function' && define.amd) { // eslint-disable-line
   define([], () => { plugin }) // eslint-disable-line

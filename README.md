@@ -64,6 +64,96 @@ The `drake` instance of each bag must be a dragula instance (with its own event 
 bag.drake.on(type, replicate)
 ```
 
+### TODO
+
+Currently the only models allowed are flat lists or perhaps nested lists.
+
+We should ability to customize the drake even handler mechanics on the underlying models to allow for other types of models.
+
+A typical schenario is to have node objects, where each node has 
+a `children` key. We should be able to drag elements to modify the node tree stucture.
+
+```js
+{
+  type: 'container'
+  children: [
+    {
+      type: 'form',
+      children: [
+        {
+          type: 'input'
+          as: 'text'
+          value: 'hello'
+          label: 'Your name'
+        },
+        {
+          type: 'input'
+          as: 'checkbox'
+          value: 'yes'
+          label: 'Feeling good?'
+        }
+      ]
+    },
+    {
+      type: 'form',
+      children: [
+      ]
+    }
+  ]
+}
+```
+
+In this example we should be able to move a form input from one form container node into a another. But perhaps this is already possible, just by setting `v-dragula` to `children[0] and children[1]`. Then we use the rest of the node tree to visualize the various different nodes :)
+
+However we might still want more fine grained control on how nodes are added/removed from the lists. Some lists might only allow ned nodes added at the front or the back, some might have validation rules etc.
+
+Currently we use global variables to handle this, which is not very flexible.
+This works since the `drag` event is always called first and will set the `dragIndex` which is scope referenced by `remove`. Instead we should move it to a class with shared instance variables. Then we can substitute the drag handlers.
+
+```js
+  let dragElm
+  let dragIndex
+  let dropIndex
+  let sourceModel
+
+  drake.on('remove', (el, container, source) => {
+    if (!drake.models) {
+      return
+    }
+    sourceModel = this.findModelForContainer(source, drake)
+    sourceModel.splice(dragIndex, 1)
+    drake.cancel(true)
+    this.eventBus.$emit('removeModel', [name, el, source, dragIndex])
+  })
+
+  drake.on('drag', (el, source) => {
+    dragElm = el
+    dragIndex = this.domIndexOf(el, source)
+  })
+```
+
+This has now been refactored in the `DragHandler` class (see `/src/drag-handler.js`. This class can be subclassed and customized as needed. You can then pass a factory method `createDragHandler` as a service option.
+
+```js
+function createDragHandler({ctx, name, drake}) {
+  return new MyDragHandler({ ctx, name, drake })
+}
+
+created () {
+  this.$dragula.create({
+    name: 'myService',
+    createDragHandler,
+    bags: {
+      third: true
+    }
+  })
+
+  // setup bags
+}
+```
+
+Note that you can set a bag to `true` as a convenience to signify no bag options (ie. default drake/dragula behavior for that bag). To be more clear you could also do `third: {}` which is the same.
+
 ### Binding models to dragable elements
 
 Please note that `vue-dragula` expects the `v-dragula` binding expression to link to an underlying model in the VM. 
