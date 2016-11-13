@@ -1071,6 +1071,12 @@ var require$$0$3 = Object.freeze({
 
 	var dragula$1 = interopDefault(dragula);
 
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+	  return typeof obj;
+	} : function (obj) {
+	  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+	};
+
 	var asyncGenerator = function () {
 	  function AwaitValue(value) {
 	    this.value = value;
@@ -1381,7 +1387,7 @@ var require$$0$3 = Object.freeze({
 	        this.handleModels(name, drake);
 	      }
 	      if (!bag.initEvents) {
-	        this.setupEvents(bag);
+	        this.setupEvents(name, bag);
 	      }
 	      return bag;
 	    }
@@ -1454,7 +1460,7 @@ var require$$0$3 = Object.freeze({
 	      if (!bag) {
 	        return;
 	      }
-	      bag.drake.destroy();
+	      bag.destroy();
 	      this.delete(name);
 	    }
 	  }, {
@@ -1471,21 +1477,21 @@ var require$$0$3 = Object.freeze({
 	        return this;
 	      }
 	      var bag = this.add(name, dragula$1(options));
-	      this.handleModels(name, bag.drake);
+	      this.handleModels(name, bag);
 	      return this;
 	    }
 	  }, {
 	    key: 'setupEvents',
-	    value: function setupEvents(bag) {
-	      this.log('setupEvents', bag);
+	    value: function setupEvents(name, bag) {
+	      this.log('setupEvents', name, bag);
 	      bag.initEvents = true;
 	      var _this = this;
 	      var emitter = function emitter(type) {
 	        function replicate() {
 	          var args = Array.prototype.slice.call(arguments);
-	          _this.eventBus.$emit(type, [bag.name].concat(args));
+	          _this.eventBus.$emit(type, [name].concat(args));
 	        }
-	        bag.drake.on(type, replicate);
+	        bag.on(type, replicate);
 	      };
 	      this.events.forEach(emitter);
 	    }
@@ -1596,6 +1602,9 @@ var require$$0$3 = Object.freeze({
 	        find: service.find.bind(service),
 	        eventBus: this.eventBus = service.eventBus
 	      };
+
+	      // alias
+	      this.createServices = this.createService;
 	    }
 
 	    createClass(Dragula, [{
@@ -1607,8 +1616,8 @@ var require$$0$3 = Object.freeze({
 	        return this;
 	      }
 	    }, {
-	      key: 'create',
-	      value: function create() {
+	      key: 'createService',
+	      value: function createService() {
 	        var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
 	        this._serviceMap = this._serviceMap || {};
@@ -1630,8 +1639,7 @@ var require$$0$3 = Object.freeze({
 	            var newService = new DragulaService({
 	              name: _name,
 	              eventBus: eventBus,
-	              bags: bags,
-	              otions: opts
+	              options: opts
 	            });
 
 	            this._serviceMap[_name] = newService;
@@ -1664,6 +1672,14 @@ var require$$0$3 = Object.freeze({
 
 	        var service = this.service(name);
 
+	        if (Array.isArray(bags)) {
+	          // turn Array into object of [name]: true
+	          bags = bags.reduce(function (obj, name) {
+	            obj[name] = true;
+	            return obj;
+	          }, {});
+	        }
+
 	        var bagNames = Object.keys(bags);
 	        var _iteratorNormalCompletion2 = true;
 	        var _didIteratorError2 = false;
@@ -1677,6 +1693,7 @@ var require$$0$3 = Object.freeze({
 	            if (bagOpts === true) {
 	              bagOpts = {};
 	            }
+
 	            service.setOptions(_bagName, bagOpts);
 	          }
 	        } catch (err) {
@@ -1698,35 +1715,40 @@ var require$$0$3 = Object.freeze({
 	      }
 	    }, {
 	      key: 'on',
-	      value: function on() {
-	        var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+	      value: function on(name) {
+	        var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-	        var services = Object.values(this.serviceMap);
-	        var _iteratorNormalCompletion3 = true;
-	        var _didIteratorError3 = false;
-	        var _iteratorError3 = undefined;
+	        if ((typeof name === 'undefined' ? 'undefined' : _typeof(name)) === 'object') {
+	          handlerConfig = name;
+	          // add event handlers for all services
+	          var services = Object.values(this.serviceMap);
+	          var _iteratorNormalCompletion3 = true;
+	          var _didIteratorError3 = false;
+	          var _iteratorError3 = undefined;
 
-	        try {
-	          for (var _iterator3 = services[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	            var _service = _step3.value;
-
-	            _service.on(handlerConfig);
-	          }
-	        } catch (err) {
-	          _didIteratorError3 = true;
-	          _iteratorError3 = err;
-	        } finally {
 	          try {
-	            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	              _iterator3.return();
+	            for (var _iterator3 = services[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	              var _service = _step3.value;
+
+	              _service.on(handlerConfig);
 	            }
+	          } catch (err) {
+	            _didIteratorError3 = true;
+	            _iteratorError3 = err;
 	          } finally {
-	            if (_didIteratorError3) {
-	              throw _iteratorError3;
+	            try {
+	              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                _iterator3.return();
+	              }
+	            } finally {
+	              if (_didIteratorError3) {
+	                throw _iteratorError3;
+	              }
 	            }
 	          }
+	        } else {
+	          this.service(name).on(handlerConfig);
 	        }
-
 	        return this;
 	      }
 	    }, {
