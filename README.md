@@ -37,6 +37,13 @@ template:
 </div>
 ```
 
+**NOTE** Vuejs 2.x 
+
+To make sure a correct update for DOM element order, we must provide a `key` for `v-for` directive inside a dragula container. https://vuejs.org/v2/guide/list.html#key  
+With `v-for="item in list"`, we need `:key="item.id"` for object items, `:key="item"` for plain string.
+
+
+
 ## APIs
 
 You can access them from `Vue.vueDragula`
