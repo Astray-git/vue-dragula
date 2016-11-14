@@ -13,7 +13,7 @@ function createDragHandler({ctx, name, drake}) {
 export class DragulaService {
   constructor ({name, eventBus, drakes, options}) {
     this.options = options || {}
-    this.logging = options.logging
+    this.logging = this.options.logging
     this.name = name
     this.drakes = drakes = {} // drake store
     this.eventBus = eventBus
