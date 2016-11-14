@@ -1342,7 +1342,7 @@ var require$$0$3 = Object.freeze({
 	    classCallCheck(this, DragulaService);
 
 	    this.options = options || {};
-	    this.logging = options.logging;
+	    this.logging = this.options.logging;
 	    this.name = name;
 	    this.drakes = drakes = {}; // drake store
 	    this.eventBus = eventBus;
