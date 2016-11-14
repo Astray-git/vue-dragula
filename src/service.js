@@ -4,21 +4,21 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-const raf = window.requestAnimationFrame
-const waitForTransition = raf
-  ? function (fn) {
-    raf(() => {
-      raf(fn)
-    })
-  }
-  : function (fn) {
-    window.setTimeout(fn, 50)
-  }
+import { DragHandler } from './drag-handler'
 
-class DragulaService {
-  constructor (Vue) {
-    this.bags = [] // bag store
-    this.eventBus = new Vue()
+function createDragHandler({ctx, name, drake}) {
+  return new DragHandler({ ctx, name, drake })
+}
+
+export class DragulaService {
+  constructor ({name, eventBus, drakes, options}) {
+    this.options = options || {}
+    this.logging = this.options.logging
+    this.name = name
+    this.drakes = drakes = {} // drake store
+    this.eventBus = eventBus
+    this.createDragHandler = options.createDragHandler || createDragHandler
+
     this.events = [
       'cancel',
       'cloned',
@@ -34,104 +34,111 @@ class DragulaService {
     ]
   }
 
+  log(event, ...args) {
+    if (!this.logging) return
+    console.log(`DragulaService [${this.name}] :`, event, ...args)
+  }
+
+  error(msg) {
+    console.error(msg)
+    throw new Error(msg)
+  }
+
+  _validate(method, name) {
+    if (!name) {
+      this.error(`${method} must take a drake name as the first argument`)
+    }
+  }
+
+  get drakeNames() {
+    return Object.keys(this.drakes)
+  }
+
   add (name, drake) {
-    let bag = this.find(name)
-    if (bag) {
-      throw new Error('Bag named: "' + name + '" already exists.')
+    this.log('add (drake)', name, drake)
+    this._validate('add', name)
+    if (this.find(name)) {
+      this.log('existing drakes', this.drakeNames)
+      let errMsg = `Drake named: "${name}" already exists for this service [${this.name}]. 
+      Most likely this error in cause by a race condition evaluating multiple template elements with 
+      the v-dragula directive having the same drake name. Please initialise the drake in the created() life cycle hook of the VM to fix this problem.`
+      this.error(msg)
     }
-    bag = {
-      name,
-      drake
-    }
-    this.bags.push(bag)
+
+    this.drakes[name] = drake
     if (drake.models) {
       this.handleModels(name, drake)
     }
-    if (!bag.initEvents) {
-      this.setupEvents(bag)
+    if (!drake.initEvents) {
+      this.setupEvents(name, drake)
     }
-    return bag
+    return drake
   }
 
   find (name) {
-    let bags = this.bags
-    for (var i = 0; i < bags.length; i++) {
-      if (bags[i].name === name) {
-        return bags[i]
-      }
-    }
+    this.log('find (drake) by name', name)
+    this._validate('find', name)
+    return this.drakes[name]
   }
 
   handleModels (name, drake) {
+    this.log('handleModels', name, drake)
+    this._validate('handleModels', name)
     if (drake.registered) { // do not register events twice
       return
     }
-    let dragElm
-    let dragIndex
-    let dropIndex
-    let sourceModel
-    drake.on('remove', (el, container, source) => {
-      if (!drake.models) {
-        return
-      }
-      sourceModel = this.findModelForContainer(source, drake)
-      sourceModel.splice(dragIndex, 1)
-      drake.cancel(true)
-      this.eventBus.$emit('removeModel', [name, el, source, dragIndex])
-    })
-    drake.on('drag', (el, source) => {
-      dragElm = el
-      dragIndex = this.domIndexOf(el, source)
-    })
-    drake.on('drop', (dropElm, target, source) => {
-      if (!drake.models || !target) {
-        return
-      }
-      dropIndex = this.domIndexOf(dropElm, target)
-      sourceModel = this.findModelForContainer(source, drake)
 
-      if (target === source) {
-        sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0])
-      } else {
-        let notCopy = dragElm === dropElm
-        let targetModel = this.findModelForContainer(target, drake)
-        let dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]))
+    const dragHandler = this.createDragHandler({ ctx: this, name, drake })
 
-        if (notCopy) {
-          waitForTransition(() => {
-            sourceModel.splice(dragIndex, 1)
-          })
-        }
-        targetModel.splice(dropIndex, 0, dropElmModel)
-        drake.cancel(true)
-      }
-      this.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex])
-    })
+    drake.on('remove', dragHandler.remove)
+    drake.on('drag', dragHandler.drag)
+    drake.on('drop', dragHandler.drop)
+
     drake.registered = true
   }
 
+  // convenience to set eventBus handlers via Object
+  on (handlerConfig = {}) {
+    let handlerNames = Object.keys(handlerConfig)
+
+    for (let handlerName of handlerNames) {
+      let handlerFunction = handlerConfig[handlerName]
+      this.eventBus.$on(handlerName, handlerFunction)
+    }
+  }
+
   destroy (name) {
-    let bag = this.find(name)
-    if (!bag) { return }
-    let bagIndex = this.bags.indexOf(bag)
-    this.bags.splice(bagIndex, 1)
-    bag.drake.destroy()
+    this.log('destroy', name)
+    this._validate('destroy', name)
+    let drake = this.find(name)
+    if (!drake) { return }
+    drake.destroy()
+    this._delete(name)
+  }
+
+  _delete(name) {
+    delete this.drakes[name]
   }
 
   setOptions (name, options) {
-    let bag = this.add(name, dragula(options))
-    this.handleModels(name, bag.drake)
+    this.log('setOptions', name, options)
+    this._validate('setOptions', name)
+    let drake = this.add(name, dragula(options))
+    this.handleModels(name, drake)
+    return this
   }
 
-  setupEvents (bag) {
-    bag.initEvents = true
+  setupEvents (name, drake) {
+    this.log('setupEvents', name, drake)
+    this._validate('setupEvents', name)
+    drake.initEvents = true
     let _this = this
     let emitter = type => {
       function replicate () {
         let args = Array.prototype.slice.call(arguments)
-        _this.eventBus.$emit(type, [bag.name].concat(args))
+        _this.eventBus.$emit(type, [name].concat(args))
       }
-      bag.drake.on(type, replicate)
+      drake.on(type, replicate)
     }
     this.events.forEach(emitter)
   }
@@ -144,6 +151,7 @@ class DragulaService {
   }
 
   findModelForContainer (container, drake) {
+    this.log('findModelForContainer', container, drake)
     return (this.findModelContainerByContainer(container, drake) || {}).model
   }
 
@@ -155,4 +163,3 @@ class DragulaService {
   }
 }
 
-export default DragulaService

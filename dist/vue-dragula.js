@@ -1,51 +1,18 @@
 /*!
- * vue-dragula v1.3.0
+ * vue-dragula v2.1.0
  * (c) 2016 Yichang Liu
  * Released under the MIT License.
  */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
-	typeof define === 'function' && define.amd ? define(factory) :
-	(global.vueDragula = factory());
-}(this, function () { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(factory((global.vueDragula = global.vueDragula || {})));
+}(this, function (exports) { 'use strict';
 
-	var babelHelpers = {};
-	babelHelpers.typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-	  return typeof obj;
-	} : function (obj) {
-	  return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
-	};
-
-	babelHelpers.classCallCheck = function (instance, Constructor) {
-	  if (!(instance instanceof Constructor)) {
-	    throw new TypeError("Cannot call a class as a function");
-	  }
-	};
-
-	babelHelpers.createClass = function () {
-	  function defineProperties(target, props) {
-	    for (var i = 0; i < props.length; i++) {
-	      var descriptor = props[i];
-	      descriptor.enumerable = descriptor.enumerable || false;
-	      descriptor.configurable = true;
-	      if ("value" in descriptor) descriptor.writable = true;
-	      Object.defineProperty(target, descriptor.key, descriptor);
-	    }
-	  }
-
-	  return function (Constructor, protoProps, staticProps) {
-	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-	    if (staticProps) defineProperties(Constructor, staticProps);
-	    return Constructor;
-	  };
-	}();
-
-	babelHelpers;
-
-	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+	var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
 
 	function interopDefault(ex) {
-		return ex && (typeof ex === 'undefined' ? 'undefined' : babelHelpers.typeof(ex)) === 'object' && 'default' in ex ? ex['default'] : ex;
+		return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
 	}
 
 	function createCommonjsModule(fn, module) {
@@ -565,8 +532,8 @@ var require$$0$3 = Object.freeze({
 	          // see also: https://github.com/bevacqua/dragula/issues/208
 	          item.focus(); // fixes https://github.com/bevacqua/dragula/issues/176
 	        } else {
-	            e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
-	          }
+	          e.preventDefault(); // fixes https://github.com/bevacqua/dragula/issues/155
+	        }
 	      }
 	    }
 
@@ -1104,9 +1071,148 @@ var require$$0$3 = Object.freeze({
 
 	var dragula$1 = interopDefault(dragula);
 
-	if (!dragula$1) {
-	  throw new Error('[vue-dragula] cannot locate dragula.');
-	}
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+	  return typeof obj;
+	} : function (obj) {
+	  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+	};
+
+	var asyncGenerator = function () {
+	  function AwaitValue(value) {
+	    this.value = value;
+	  }
+
+	  function AsyncGenerator(gen) {
+	    var front, back;
+
+	    function send(key, arg) {
+	      return new Promise(function (resolve, reject) {
+	        var request = {
+	          key: key,
+	          arg: arg,
+	          resolve: resolve,
+	          reject: reject,
+	          next: null
+	        };
+
+	        if (back) {
+	          back = back.next = request;
+	        } else {
+	          front = back = request;
+	          resume(key, arg);
+	        }
+	      });
+	    }
+
+	    function resume(key, arg) {
+	      try {
+	        var result = gen[key](arg);
+	        var value = result.value;
+
+	        if (value instanceof AwaitValue) {
+	          Promise.resolve(value.value).then(function (arg) {
+	            resume("next", arg);
+	          }, function (arg) {
+	            resume("throw", arg);
+	          });
+	        } else {
+	          settle(result.done ? "return" : "normal", result.value);
+	        }
+	      } catch (err) {
+	        settle("throw", err);
+	      }
+	    }
+
+	    function settle(type, value) {
+	      switch (type) {
+	        case "return":
+	          front.resolve({
+	            value: value,
+	            done: true
+	          });
+	          break;
+
+	        case "throw":
+	          front.reject(value);
+	          break;
+
+	        default:
+	          front.resolve({
+	            value: value,
+	            done: false
+	          });
+	          break;
+	      }
+
+	      front = front.next;
+
+	      if (front) {
+	        resume(front.key, front.arg);
+	      } else {
+	        back = null;
+	      }
+	    }
+
+	    this._invoke = send;
+
+	    if (typeof gen.return !== "function") {
+	      this.return = undefined;
+	    }
+	  }
+
+	  if (typeof Symbol === "function" && Symbol.asyncIterator) {
+	    AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
+	      return this;
+	    };
+	  }
+
+	  AsyncGenerator.prototype.next = function (arg) {
+	    return this._invoke("next", arg);
+	  };
+
+	  AsyncGenerator.prototype.throw = function (arg) {
+	    return this._invoke("throw", arg);
+	  };
+
+	  AsyncGenerator.prototype.return = function (arg) {
+	    return this._invoke("return", arg);
+	  };
+
+	  return {
+	    wrap: function (fn) {
+	      return function () {
+	        return new AsyncGenerator(fn.apply(this, arguments));
+	      };
+	    },
+	    await: function (value) {
+	      return new AwaitValue(value);
+	    }
+	  };
+	}();
+
+	var classCallCheck = function (instance, Constructor) {
+	  if (!(instance instanceof Constructor)) {
+	    throw new TypeError("Cannot call a class as a function");
+	  }
+	};
+
+	var createClass = function () {
+	  function defineProperties(target, props) {
+	    for (var i = 0; i < props.length; i++) {
+	      var descriptor = props[i];
+	      descriptor.enumerable = descriptor.enumerable || false;
+	      descriptor.configurable = true;
+	      if ("value" in descriptor) descriptor.writable = true;
+	      Object.defineProperty(target, descriptor.key, descriptor);
+	    }
+	  }
+
+	  return function (Constructor, protoProps, staticProps) {
+	    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+	    if (staticProps) defineProperties(Constructor, staticProps);
+	    return Constructor;
+	  };
+	}();
 
 	var raf = window.requestAnimationFrame;
 	var waitForTransition = raf ? function (fn) {
@@ -1117,125 +1223,280 @@ var require$$0$3 = Object.freeze({
 	  window.setTimeout(fn, 50);
 	};
 
-	var DragulaService = function () {
-	  function DragulaService(Vue) {
-	    babelHelpers.classCallCheck(this, DragulaService);
+	var DragHandler = function () {
+	  function DragHandler(_ref) {
+	    var ctx = _ref.ctx,
+	        name = _ref.name,
+	        drake = _ref.drake;
+	    classCallCheck(this, DragHandler);
 
-	    this.bags = []; // bag store
-	    this.eventBus = new Vue();
+	    this.dragElm = null;
+	    this.dragIndex = null;
+	    this.dropIndex = null;
+	    this.sourceModel = null;
+	    this.ctx = ctx;
+	    this.drake = drake;
+	    this.name = name;
+	    this.eventBus = ctx.eventBus;
+	    this.findModelForContainer = ctx.findModelForContainer;
+	    this.domIndexOf = ctx.domIndexOf;
+	  }
+
+	  createClass(DragHandler, [{
+	    key: 'removeModel',
+	    value: function removeModel(el, container, source) {
+	      this.sourceModel.splice(this.dragIndex, 1);
+	    }
+	  }, {
+	    key: 'dropModelSame',
+	    value: function dropModelSame(dropElm, target, source) {
+	      this.sourceModel.splice(this.dropIndex, 0, this.sourceModel.splice(this.dragIndex, 1)[0]);
+	    }
+	  }, {
+	    key: 'insertModel',
+	    value: function insertModel(targetModel, dropElmModel) {
+	      targetModel.splice(this.dropIndex, 0, dropElmModel);
+	    }
+	  }, {
+	    key: 'dropModelTarget',
+	    value: function dropModelTarget(dropElm, target, source) {
+	      var _this = this;
+
+	      var notCopy = this.dragElm === dropElm;
+	      var targetModel = this.findModelForContainer(target, this.drake);
+	      var dropElmModel = notCopy ? this.dropElmModel : this.jsonDropElmModel;
+
+	      if (notCopy) {
+	        waitForTransition(function () {
+	          _this.sourceModel.splice(_this.dragIndex, 1);
+	        });
+	      }
+	      this.insertModel(targetModel, dropElmModel);
+	      this.drake.cancel(true);
+	    }
+	  }, {
+	    key: 'dropModel',
+	    value: function dropModel(dropElm, target, source) {
+	      target === source ? this.dropModelSame(dropElm, target, source) : this.dropModelTarget(dropElm, target, source);
+	    }
+	  }, {
+	    key: 'remove',
+	    value: function remove(el, container, source) {
+	      if (!this.drake.models) {
+	        return;
+	      }
+	      this.sourceModel = this.findModelForContainer(source, this.drake);
+	      this.removeModel(el, container, source);
+	      this.drake.cancel(true);
+	      this.eventBus.$emit('removeModel', [this.name, el, source, this.dragIndex]);
+	    }
+	  }, {
+	    key: 'drag',
+	    value: function drag(el, source) {
+	      this.dragElm = el;
+	      this.dragIndex = this.domIndexOf(el, source);
+	    }
+	  }, {
+	    key: 'drop',
+	    value: function drop(dropElm, target, source) {
+	      if (!this.drake.models || !target) {
+	        return;
+	      }
+	      this.dropIndex = this.domIndexOf(dropElm, target);
+	      this.sourceModel = this.findModelForContainer(source, this.drake);
+	      this.dropModel(dropElm, target, source);
+	      this.eventBus.$emit('dropModel', [this.name, dropElm, target, source, this.dropIndex]);
+	    }
+	  }, {
+	    key: 'dropElmModel',
+	    get: function get() {
+	      return this.sourceModel[this.dragIndex];
+	    }
+	  }, {
+	    key: 'jsonDropElmModel',
+	    get: function get() {
+	      return JSON.parse(JSON.stringify(this.sourceModel[this.dragIndex]));
+	    }
+	  }]);
+	  return DragHandler;
+	}();
+
+	if (!dragula$1) {
+	  throw new Error('[vue-dragula] cannot locate dragula.');
+	}
+
+	function createDragHandler(_ref) {
+	  var ctx = _ref.ctx,
+	      name = _ref.name,
+	      drake = _ref.drake;
+
+	  return new DragHandler({ ctx: ctx, name: name, drake: drake });
+	}
+
+	var DragulaService = function () {
+	  function DragulaService(_ref2) {
+	    var name = _ref2.name,
+	        eventBus = _ref2.eventBus,
+	        drakes = _ref2.drakes,
+	        options = _ref2.options;
+	    classCallCheck(this, DragulaService);
+
+	    this.options = options || {};
+	    this.logging = this.options.logging;
+	    this.name = name;
+	    this.drakes = drakes = {}; // drake store
+	    this.eventBus = eventBus;
+	    this.createDragHandler = options.createDragHandler || createDragHandler;
+
 	    this.events = ['cancel', 'cloned', 'drag', 'dragend', 'drop', 'out', 'over', 'remove', 'shadow', 'dropModel', 'removeModel'];
 	  }
 
-	  babelHelpers.createClass(DragulaService, [{
+	  createClass(DragulaService, [{
+	    key: 'log',
+	    value: function log(event) {
+	      var _console;
+
+	      if (!this.logging) return;
+
+	      for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+	        args[_key - 1] = arguments[_key];
+	      }
+
+	      (_console = console).log.apply(_console, ['DragulaService [' + this.name + '] :', event].concat(args));
+	    }
+	  }, {
+	    key: 'error',
+	    value: function error(msg) {
+	      console.error(msg);
+	      throw new Error(msg);
+	    }
+	  }, {
+	    key: '_validate',
+	    value: function _validate(method, name) {
+	      if (!name) {
+	        this.error(method + ' must take a drake name as the first argument');
+	      }
+	    }
+	  }, {
 	    key: 'add',
 	    value: function add(name, drake) {
-	      var bag = this.find(name);
-	      if (bag) {
-	        throw new Error('Bag named: "' + name + '" already exists.');
+	      this.log('add (drake)', name, drake);
+	      this._validate('add', name);
+	      if (this.find(name)) {
+	        this.log('existing drakes', this.drakeNames);
+	        var errMsg = 'Drake named: "' + name + '" already exists for this service [' + this.name + ']. \n      Most likely this error in cause by a race condition evaluating multiple template elements with \n      the v-dragula directive having the same drake name. Please initialise the drake in the created() life cycle hook of the VM to fix this problem.';
+	        this.error(msg);
 	      }
-	      bag = {
-	        name: name,
-	        drake: drake
-	      };
-	      this.bags.push(bag);
+
+	      this.drakes[name] = drake;
 	      if (drake.models) {
 	        this.handleModels(name, drake);
 	      }
-	      if (!bag.initEvents) {
-	        this.setupEvents(bag);
+	      if (!drake.initEvents) {
+	        this.setupEvents(name, drake);
 	      }
-	      return bag;
+	      return drake;
 	    }
 	  }, {
 	    key: 'find',
 	    value: function find(name) {
-	      var bags = this.bags;
-	      for (var i = 0; i < bags.length; i++) {
-	        if (bags[i].name === name) {
-	          return bags[i];
-	        }
-	      }
+	      this.log('find (drake) by name', name);
+	      this._validate('find', name);
+	      return this.drakes[name];
 	    }
 	  }, {
 	    key: 'handleModels',
 	    value: function handleModels(name, drake) {
-	      var _this2 = this;
-
+	      this.log('handleModels', name, drake);
+	      this._validate('handleModels', name);
 	      if (drake.registered) {
 	        // do not register events twice
 	        return;
 	      }
-	      var dragElm = void 0;
-	      var dragIndex = void 0;
-	      var dropIndex = void 0;
-	      var sourceModel = void 0;
-	      drake.on('remove', function (el, container, source) {
-	        if (!drake.models) {
-	          return;
-	        }
-	        sourceModel = _this2.findModelForContainer(source, drake);
-	        sourceModel.splice(dragIndex, 1);
-	        drake.cancel(true);
-	        _this2.eventBus.$emit('removeModel', [name, el, source, dragIndex]);
-	      });
-	      drake.on('drag', function (el, source) {
-	        dragElm = el;
-	        dragIndex = _this2.domIndexOf(el, source);
-	      });
-	      drake.on('drop', function (dropElm, target, source) {
-	        if (!drake.models || !target) {
-	          return;
-	        }
-	        dropIndex = _this2.domIndexOf(dropElm, target);
-	        sourceModel = _this2.findModelForContainer(source, drake);
 
-	        if (target === source) {
-	          sourceModel.splice(dropIndex, 0, sourceModel.splice(dragIndex, 1)[0]);
-	        } else {
-	          var notCopy = dragElm === dropElm;
-	          var targetModel = _this2.findModelForContainer(target, drake);
-	          var dropElmModel = notCopy ? sourceModel[dragIndex] : JSON.parse(JSON.stringify(sourceModel[dragIndex]));
+	      var dragHandler = this.createDragHandler({ ctx: this, name: name, drake: drake });
 
-	          if (notCopy) {
-	            waitForTransition(function () {
-	              sourceModel.splice(dragIndex, 1);
-	            });
-	          }
-	          targetModel.splice(dropIndex, 0, dropElmModel);
-	          drake.cancel(true);
-	        }
-	        _this2.eventBus.$emit('dropModel', [name, dropElm, target, source, dropIndex]);
-	      });
+	      drake.on('remove', dragHandler.remove);
+	      drake.on('drag', dragHandler.drag);
+	      drake.on('drop', dragHandler.drop);
+
 	      drake.registered = true;
+	    }
+
+	    // convenience to set eventBus handlers via Object
+
+	  }, {
+	    key: 'on',
+	    value: function on() {
+	      var handlerConfig = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	      var handlerNames = Object.keys(handlerConfig);
+
+	      var _iteratorNormalCompletion = true;
+	      var _didIteratorError = false;
+	      var _iteratorError = undefined;
+
+	      try {
+	        for (var _iterator = handlerNames[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	          var handlerName = _step.value;
+
+	          var handlerFunction = handlerConfig[handlerName];
+	          this.eventBus.$on(handlerName, handlerFunction);
+	        }
+	      } catch (err) {
+	        _didIteratorError = true;
+	        _iteratorError = err;
+	      } finally {
+	        try {
+	          if (!_iteratorNormalCompletion && _iterator.return) {
+	            _iterator.return();
+	          }
+	        } finally {
+	          if (_didIteratorError) {
+	            throw _iteratorError;
+	          }
+	        }
+	      }
 	    }
 	  }, {
 	    key: 'destroy',
 	    value: function destroy(name) {
-	      var bag = this.find(name);
-	      if (!bag) {
+	      this.log('destroy', name);
+	      this._validate('destroy', name);
+	      var drake = this.find(name);
+	      if (!drake) {
 	        return;
 	      }
-	      var bagIndex = this.bags.indexOf(bag);
-	      this.bags.splice(bagIndex, 1);
-	      bag.drake.destroy();
+	      drake.destroy();
+	      this._delete(name);
+	    }
+	  }, {
+	    key: '_delete',
+	    value: function _delete(name) {
+	      delete this.drakes[name];
 	    }
 	  }, {
 	    key: 'setOptions',
 	    value: function setOptions(name, options) {
-	      var bag = this.add(name, dragula$1(options));
-	      this.handleModels(name, bag.drake);
+	      this.log('setOptions', name, options);
+	      this._validate('setOptions', name);
+	      var drake = this.add(name, dragula$1(options));
+	      this.handleModels(name, drake);
+	      return this;
 	    }
 	  }, {
 	    key: 'setupEvents',
-	    value: function setupEvents(bag) {
-	      bag.initEvents = true;
+	    value: function setupEvents(name, drake) {
+	      this.log('setupEvents', name, drake);
+	      this._validate('setupEvents', name);
+	      drake.initEvents = true;
 	      var _this = this;
 	      var emitter = function emitter(type) {
 	        function replicate() {
 	          var args = Array.prototype.slice.call(arguments);
-	          _this.eventBus.$emit(type, [bag.name].concat(args));
+	          _this.eventBus.$emit(type, [name].concat(args));
 	        }
-	        bag.drake.on(type, replicate);
+	        drake.on(type, replicate);
 	      };
 	      this.events.forEach(emitter);
 	    }
@@ -1247,6 +1508,7 @@ var require$$0$3 = Object.freeze({
 	  }, {
 	    key: 'findModelForContainer',
 	    value: function findModelForContainer(container, drake) {
+	      this.log('findModelForContainer', container, drake);
 	      return (this.findModelContainerByContainer(container, drake) || {}).model;
 	    }
 	  }, {
@@ -1259,6 +1521,11 @@ var require$$0$3 = Object.freeze({
 	        return model.container === container;
 	      });
 	    }
+	  }, {
+	    key: 'drakeNames',
+	    get: function get() {
+	      return Object.keys(this.drakes);
+	    }
 	  }]);
 	  return DragulaService;
 	}();
@@ -1267,57 +1534,350 @@ var require$$0$3 = Object.freeze({
 	  throw new Error('[vue-dragula] cannot locate dragula.');
 	}
 
-	function VueDragula (Vue) {
-	  var service = new DragulaService(Vue);
+	var defaults = {
+	  createService: function createService(_ref) {
+	    var name = _ref.name,
+	        eventBus = _ref.eventBus,
+	        drakes = _ref.drakes;
 
-	  var name = 'globalBag';
+	    return new DragulaService({
+	      name: name,
+	      eventBus: eventBus,
+	      drakes: drakes
+	    });
+	  },
+	  createEventBus: function createEventBus(Vue) {
+	    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	    return new Vue();
+	  }
+	};
+
+	function VueDragula (Vue) {
+	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	  function logPlugin() {
+	    var _console;
+
+	    if (!options.logging) return;
+
+	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+	      args[_key] = arguments[_key];
+	    }
+
+	    (_console = console).log.apply(_console, ['vue-dragula plugin'].concat(args));
+	  }
+
+	  function logDir() {
+	    for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+	      args[_key2] = arguments[_key2];
+	    }
+
+	    return logPlugin.apply(undefined, ['v-dragula directive'].concat(args));
+	  }
+
+	  logPlugin('Initializing vue-dragula plugin', options);
+
+	  var createService = options.createService || defaults.createService;
+	  var createEventBus = options.createEventBus || defaults.createEventBus;
+
+	  var eventBus = createEventBus(Vue, options);
+
+	  // global service
+	  var service = createService({
+	    name: 'global.dragula',
+	    eventBus: eventBus,
+	    drakes: options.drakes
+	  });
+
+	  var globalName = 'globalDrake';
 	  var drake = void 0;
 
-	  Vue.vueDragula = {
-	    options: service.setOptions.bind(service),
-	    find: service.find.bind(service),
-	    eventBus: service.eventBus
-	  };
+	  var Dragula = function () {
+	    function Dragula(options) {
+	      classCallCheck(this, Dragula);
+
+	      this.options = options;
+
+	      // convenience functions on global service
+	      this.$service = {
+	        options: service.setOptions.bind(service),
+	        find: service.find.bind(service),
+	        eventBus: this.eventBus = service.eventBus
+	      };
+
+	      // alias
+	      this.createServices = this.createService;
+	    }
+
+	    createClass(Dragula, [{
+	      key: 'optionsFor',
+	      value: function optionsFor(name) {
+	        var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	        this.service(name).setOptions(opts);
+	        return this;
+	      }
+	    }, {
+	      key: 'createService',
+	      value: function createService() {
+	        var serviceOpts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	        this._serviceMap = this._serviceMap || {};
+	        var names = serviceOpts.names || [];
+	        var name = serviceOpts.name || [];
+	        var drakes = serviceOpts.drakes || {};
+	        var opts = Object.assign({}, options, serviceOpts);
+	        names = names || [name];
+	        var eventBus = serviceOpts.eventBus || eventBus;
+
+	        var _iteratorNormalCompletion = true;
+	        var _didIteratorError = false;
+	        var _iteratorError = undefined;
+
+	        try {
+	          for (var _iterator = names[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	            var _name = _step.value;
+
+	            var newService = new DragulaService({
+	              name: _name,
+	              eventBus: eventBus,
+	              options: opts
+	            });
+
+	            this._serviceMap[_name] = newService;
+
+	            if (drakes) {
+	              this.drakesFor(_name, drakes);
+	            }
+	          }
+	        } catch (err) {
+	          _didIteratorError = true;
+	          _iteratorError = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion && _iterator.return) {
+	              _iterator.return();
+	            }
+	          } finally {
+	            if (_didIteratorError) {
+	              throw _iteratorError;
+	            }
+	          }
+	        }
+
+	        return this;
+	      }
+	    }, {
+	      key: 'drakesFor',
+	      value: function drakesFor(name) {
+	        var drakes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	        var service = this.service(name);
+
+	        if (Array.isArray(drakes)) {
+	          // turn Array into object of [name]: true
+	          drakes = drakes.reduce(function (obj, name) {
+	            obj[name] = true;
+	            return obj;
+	          }, {});
+	        }
+
+	        var drakeNames = Object.keys(drakes);
+	        var _iteratorNormalCompletion2 = true;
+	        var _didIteratorError2 = false;
+	        var _iteratorError2 = undefined;
+
+	        try {
+	          for (var _iterator2 = drakeNames[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	            var _drakeName = _step2.value;
+
+	            var drakeOpts = drakes[_drakeName];
+	            if (drakeOpts === true) {
+	              drakeOpts = {};
+	            }
+
+	            service.setOptions(_drakeName, drakeOpts);
+	          }
+	        } catch (err) {
+	          _didIteratorError2 = true;
+	          _iteratorError2 = err;
+	        } finally {
+	          try {
+	            if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	              _iterator2.return();
+	            }
+	          } finally {
+	            if (_didIteratorError2) {
+	              throw _iteratorError2;
+	            }
+	          }
+	        }
+
+	        return this;
+	      }
+	    }, {
+	      key: 'on',
+	      value: function on(name) {
+	        var handlerConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	        if ((typeof name === 'undefined' ? 'undefined' : _typeof(name)) === 'object') {
+	          handlerConfig = name;
+	          // add event handlers for all services
+	          var services = Object.values(this.serviceMap);
+	          var _iteratorNormalCompletion3 = true;
+	          var _didIteratorError3 = false;
+	          var _iteratorError3 = undefined;
+
+	          try {
+	            for (var _iterator3 = services[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	              var _service = _step3.value;
+
+	              _service.on(handlerConfig);
+	            }
+	          } catch (err) {
+	            _didIteratorError3 = true;
+	            _iteratorError3 = err;
+	          } finally {
+	            try {
+	              if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                _iterator3.return();
+	              }
+	            } finally {
+	              if (_didIteratorError3) {
+	                throw _iteratorError3;
+	              }
+	            }
+	          }
+	        } else {
+	          this.service(name).on(handlerConfig);
+	        }
+	        return this;
+	      }
+	    }, {
+	      key: 'service',
+
+
+	      // return named service or first service
+	      value: function service(name) {
+	        var found = this._serviceMap[name];
+	        if (!found || !name) {
+	          var keys = this.servicesNames;
+	          found = this._serviceMap[keys[0]];
+	        }
+	        return found;
+	      }
+	    }, {
+	      key: 'serviceNames',
+	      get: function get() {
+	        return Object.keys(this._serviceMap);
+	      }
+	    }, {
+	      key: 'services',
+	      get: function get() {
+	        return Object.values(this._serviceMap);
+	      }
+	    }]);
+	    return Dragula;
+	  }();
+
+	  Vue.$dragula = new Dragula(options);
+
+	  Vue.prototype.$dragula = Vue.$dragula;
+
+	  function findService(name, vnode, serviceName) {
+	    // first try to register on DragulaService of component
+	    if (vnode) {
+	      var _dragula = vnode.context.$dragula;
+	      if (_dragula) {
+	        logDir('trying to find and use component service');
+
+	        var componentService = _dragula.services[serviceName];
+	        if (componentService) {
+	          logDir('using component service', componentService);
+	          return componentService;
+	        }
+	      }
+	    }
+	    logDir('using global service', service);
+	    return service.find(name, vnode);
+	  }
+
+	  function findDrake(name, vnode, serviceName) {
+	    return findService(name, vnode, serviceName).find(name, vnode);
+	  }
+
+	  function calcNames(name, vnode, ctx) {
+	    var drakeName = vnode ? vnode.data.attrs.drake // Vue 2
+	    : this.params.drake; // Vue 1
+
+	    var serviceName = vnode ? vnode.data.attrs.service // Vue 2
+	    : this.params.service; // Vue 1
+
+	    if (drakeName !== undefined && drakeName.length !== 0) {
+	      name = drakeName;
+	    }
+	    return { name: name, drakeName: drakeName, serviceName: serviceName };
+	  }
 
 	  Vue.directive('dragula', {
-	    params: ['bag'],
+	    params: ['drake', 'service'],
 
 	    bind: function bind(container, binding, vnode) {
-	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
-	      : this.params.bag; // Vue 1
+	      logDir('bind', container, binding, vnode);
+
+	      var _calcNames = calcNames(globalName, vnode, this),
+	          name = _calcNames.name,
+	          drakeName = _calcNames.drakeName,
+	          serviceName = _calcNames.serviceName;
+
+	      var service = findService(name, vnode, serviceName);
+	      var drake = service.find(name, vnode);
+
 	      if (!vnode) {
 	        container = this.el; // Vue 1
 	      }
-	      if (bagName !== undefined && bagName.length !== 0) {
-	        name = bagName;
-	      }
-	      var bag = service.find(name);
-	      if (bag) {
-	        drake = bag.drake;
+
+	      logDir({
+	        service: {
+	          name: serviceName,
+	          instance: service
+	        },
+	        drake: {
+	          name: drakeName,
+	          instance: drake
+	        },
+	        container: container
+	      });
+
+	      if (drake) {
 	        drake.containers.push(container);
 	        return;
 	      }
-	      drake = dragula$1({
+	      var newDrake = dragula$1({
 	        containers: [container]
 	      });
-	      service.add(name, drake);
+	      service.add(name, newDrake);
 
-	      service.handleModels(name, drake);
+	      service.handleModels(name, newDrake);
 	    },
 	    update: function update(container, binding, vnode, oldVnode) {
+	      logDir('update', container, binding, vnode);
+
 	      var newValue = vnode ? binding.value // Vue 2
 	      : container; // Vue 1
 	      if (!newValue) {
 	        return;
 	      }
 
-	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
-	      : this.params.bag; // Vue 1
-	      if (bagName !== undefined && bagName.length !== 0) {
-	        name = bagName;
-	      }
-	      var bag = service.find(name);
-	      drake = bag.drake;
+	      var _calcNames2 = calcNames(globalName, vnode, this),
+	          name = _calcNames2.name,
+	          drakeName = _calcNames2.drakeName,
+	          serviceName = _calcNames2.serviceName;
+
+	      var service = findService(name, vnode, serviceName);
+	      var drake = service.find(name, vnode);
+
 	      if (!drake.models) {
 	        drake.models = [];
 	      }
@@ -1325,11 +1885,27 @@ var require$$0$3 = Object.freeze({
 	      if (!vnode) {
 	        container = this.el; // Vue 1
 	      }
+
 	      var modelContainer = service.findModelContainerByContainer(container, drake);
 
+	      logDir({
+	        service: {
+	          name: serviceName,
+	          instance: service
+	        },
+	        drake: {
+	          name: drakeName,
+	          instance: drake
+	        },
+	        container: container,
+	        modelContainer: modelContainer
+	      });
+
 	      if (modelContainer) {
+	        logDir('set model of container', newValue);
 	        modelContainer.model = newValue;
 	      } else {
+	        logDir('push model and container on drake', newValue, container);
 	        drake.models.push({
 	          model: newValue,
 	          container: container
@@ -1337,35 +1913,55 @@ var require$$0$3 = Object.freeze({
 	      }
 	    },
 	    unbind: function unbind(container, binding, vnode) {
-	      var unbindBagName = 'globalBag';
-	      var bagName = vnode ? vnode.data.attrs.bag // Vue 2
-	      : this.params.bag; // Vue 1
-	      if (bagName !== undefined && bagName.length !== 0) {
-	        unbindBagName = bagName;
-	      }
-	      var drake = service.find(unbindBagName).drake;
+	      logDir('unbind', container, binding, vnode);
+
+	      var _calcNames3 = calcNames(globalName, vnode, this),
+	          name = _calcNames3.name,
+	          serviceName = _calcNames3.serviceName;
+
+	      var service = findService(name, vnode, serviceName);
+	      var drake = service.find(name, vnode);
+
+	      logDir({
+	        service: {
+	          name: serviceName,
+	          instance: service
+	        },
+	        drake: {
+	          name: drakeName,
+	          instance: drake
+	        },
+	        container: container
+	      });
+
 	      if (!drake) {
 	        return;
 	      }
+
 	      var containerIndex = drake.containers.indexOf(container);
+
 	      if (containerIndex > -1) {
+	        logDir('remove container', containerIndex);
 	        drake.containers.splice(containerIndex, 1);
 	      }
+
 	      if (drake.containers.length === 0) {
-	        service.destroy(unbindBagName);
+	        logDir('destroy service');
+	        service.destroy(name);
 	      }
 	    }
 	  });
 	}
 
 	function plugin(Vue) {
-	  var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+	  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
 	  if (plugin.installed) {
 	    console.warn('[vue-dragula] already installed.');
 	  }
 
-	  VueDragula(Vue);
+	  console.log('Add Dragula plugin:', options);
+	  VueDragula(Vue, options);
 	}
 
 	plugin.version = '1.0.0';
@@ -1376,9 +1972,11 @@ var require$$0$3 = Object.freeze({
 	    plugin;
 	  }); // eslint-disable-line
 	} else if (window.Vue) {
-	    window.Vue.use(plugin);
-	  }
+	  window.Vue.use(plugin);
+	}
 
-	return plugin;
+	exports['default'] = plugin;
+	exports.DragulaService = DragulaService;
+	exports.DragHandler = DragHandler;
 
 }));
