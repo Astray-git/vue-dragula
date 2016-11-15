@@ -17,6 +17,7 @@ const waitForTransition = raf
 
 class DragulaService {
   constructor (Vue) {
+    console.log('Create Dragula service')    
     this.bags = [] // bag store
     this.eventBus = new Vue()
     this.events = [
@@ -35,6 +36,7 @@ class DragulaService {
   }
 
   add (name, drake) {
+    console.log('Dragula: add', name)    
     let bag = this.find(name)
     if (bag) {
       throw new Error('Bag named: "' + name + '" already exists.')
@@ -54,6 +56,7 @@ class DragulaService {
   }
 
   find (name) {
+    console.log('Dragula: find', name)    
     let bags = this.bags
     for (var i = 0; i < bags.length; i++) {
       if (bags[i].name === name) {
@@ -63,6 +66,8 @@ class DragulaService {
   }
 
   handleModels (name, drake) {
+    console.log('Dragula: handleModels', name)
+
     if (drake.registered) { // do not register events twice
       return
     }

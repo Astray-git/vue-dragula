@@ -5,22 +5,26 @@ if (!dragula) {
   throw new Error('[vue-dragula] cannot locate dragula.')
 }
 
-export default function (Vue) {
+export default function (Vue, options = {}) {
   const service = new DragulaService(Vue)
 
   let name = 'globalBag'
   let drake
 
-  Vue.vueDragula = {
+  console.log('Adding Dragula as plugin...')
+  Vue.$dragula = {
     options: service.setOptions.bind(service),
     find: service.find.bind(service),
     eventBus: service.eventBus
   }
-
+  Vue.prototype.$dragula = Vue.$dragula 
+ 
   Vue.directive('dragula', {
     params: ['bag'],
 
     bind (container, binding, vnode) {
+      console.log('bind Dragula', container)
+
       const bagName = vnode
         ? vnode.data.attrs.bag // Vue 2
         : this.params.bag // Vue 1
@@ -45,6 +49,8 @@ export default function (Vue) {
     },
 
     update (container, binding, vnode, oldVnode) {
+      console.log('update Dragula', container)
+
       const newValue = vnode
         ? binding.value // Vue 2
         : container // Vue 1
@@ -78,6 +84,8 @@ export default function (Vue) {
     },
 
     unbind (container, binding, vnode) {
+      console.log('unbind Dragula', container)
+
       let unbindBagName = 'globalBag'
       const bagName = vnode
         ? vnode.data.attrs.bag // Vue 2
