@@ -77,7 +77,7 @@ For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
 ```js
 ...
 new Vue({
-  ready: function () {
+  mounted: function () {
     Vue.vueDragula.eventBus.$on('drop', function (args) {
       console.log('drop: ' + args[0])
     })
