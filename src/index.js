@@ -8,7 +8,7 @@ function plugin (Vue, options = {}) {
   VueDragula(Vue)
 }
 
-plugin.version = '1.0.0'
+plugin.version = '2.0.0'
 
 export default plugin
 

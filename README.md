@@ -37,13 +37,6 @@ template:
 </div>
 ```
 
-**NOTE** Vuejs 2.x 
-
-To make sure a correct update for DOM element order, we must provide a `key` for `v-for` directive inside a dragula container. https://vuejs.org/v2/guide/list.html#key  
-With `v-for="item in list"`, we need `:key="item.id"` for object items, `:key="item"` for plain string.
-
-
-
 ## APIs
 
 You can access them from `Vue.vueDragula`
@@ -63,12 +56,9 @@ new Vue({
 })
 ```
 
-### `find(name)`
+### `getDrake(name)`
 
-Returns the `bag` for a `drake` instance. Contains the following properties:
-
-- `name` the name that identifies the bag
-- `drake` the raw `drake` instance
+Returns the `drake` instance  according the given name of a bag.
 
 ## Events
 For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
@@ -77,7 +67,7 @@ For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
 ```js
 ...
 new Vue({
-  ready: function () {
+  mounted: function () {
     Vue.vueDragula.eventBus.$on('drop', function (args) {
       console.log('drop: ' + args[0])
     })
@@ -88,9 +78,24 @@ new Vue({
 
 ## Special Events for vue-dragula
 
-| Event Name |      Listener Arguments      |  Event Description |
+| Event Name |      Listener Arguments      |
 | :-------------: |:-------------:| -----|
-| dropModel | bagName, el, target, source, dropIndex | model was synced, dropIndex exposed |
-| removeModel | bagName, el, container, removeIndex | model was synced, removeIndex exposed |
+| drop-model | bagName, el, dropTarget, dropSource, dropIndex |
+| remove-model | bagName, el, dropTarget, dropSource, dropIndex |
+
+`dropTarget`, `dropSource`, properties:
+
+- `el`: the DOM element
+- `model`: updated model
+- `expression`: the expression for directive
+
+A sample function to update model on events:
+```js
+function updateModel (vm, dropTarget, dropSource) {
+  vm[dropSource.expression] = dropSource.model
+  if (dropTarget.el === dropSource.el) { return }
+  vm[dropTarget.expression] = dropTarget.model
+}
+```
 
 [1]: https://github.com/bevacqua/dragula

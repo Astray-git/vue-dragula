@@ -1,6 +1,6 @@
 {
   "name": "vue-dragula",
-  "version": "1.3.0",
+  "version": "2.0.0-alpha.1",
   "description": "Vue wrapper for dragula",
   "main": "dist/vue-dragula.js",
   "files": [
@@ -16,6 +16,7 @@
   },
   "scripts": {
     "dev": "node example/server.js",
+    "build:example": "webpack --progress --hide-modules --config example/webpack.config.js",
     "build": "node build/build.js",
     "lint": "eslint src"
   },
