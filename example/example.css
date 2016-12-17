@@ -184,3 +184,15 @@ button:hover {
 .container .scale-leave {
   height: 0px;
 }
+
+.wrapper-list-move, .wrapper-list-enter-active, .wrapper-list-leave-active {
+  transition: all .5s cubic-bezier(.55,0,.1,1);
+}
+.wrapper-list-enter {
+  opacity: 0;
+  transform: scaleY(0);
+}
+.wrapper-list-leave-active {
+  opacity: 0.01;
+  transform: scaleY(0.01);
+}

@@ -6,96 +6,113 @@ if (!dragula) {
 }
 
 export default function (Vue) {
+  const isVue2 = Vue.elementDirective === undefined
+
   const service = new DragulaService(Vue)
 
-  let name = 'globalBag'
-  let drake
-
-  Vue.vueDragula = {
+  const vueDragula = {
     options: service.setOptions.bind(service),
-    find: service.find.bind(service),
+    getDrake: service.getDrake.bind(service),
     eventBus: service.eventBus
   }
 
-  Vue.directive('dragula', {
-    params: ['bag'],
+  Vue.dragula = vueDragula
+  Vue.prototype.$dragula = vueDragula
 
-    bind (container, binding, vnode) {
-      const bagName = vnode
-        ? vnode.data.attrs.bag // Vue 2
-        : this.params.bag // Vue 1
-      if (!vnode) {
-        container = this.el // Vue 1
-      }
-      if (bagName !== undefined && bagName.length !== 0) {
-        name = bagName
-      }
-      const bag = service.find(name)
-      if (bag) {
-        drake = bag.drake
+  Vue.directive('dragula', {
+    params: ['bag'], // Vue 1
+
+    bind (el, binding, vnode) {
+      const {container, name} = getBindInfo.call(this, isVue2, el, vnode)
+      let drake = service.getDrake(name)
+      if (drake) {
         drake.containers.push(container)
+        if (!isVue2) { return }
+
+        if (!drake.models) { // Vue2,handle pre added drake via $dragula.options
+          drake.models = []
+        }
+        drake.models.push({
+          model: binding.value.slice(),
+          container: container,
+          expression: binding.expression
+        })
         return
       }
+
       drake = dragula({
         containers: [container]
       })
       service.add(name, drake)
-
-      service.handleModels(name, drake)
+      service.registerDrake(name, drake)
+      if (!isVue2) {
+        return
+      }
+      drake.models = [{
+        model: binding.value.slice(),
+        container: container,
+        expression: binding.expression
+      }]
     },
 
-    update (container, binding, vnode, oldVnode) {
-      const newValue = vnode
+    update (el, binding, vnode) {
+      const newValue = isVue2
         ? binding.value // Vue 2
-        : container // Vue 1
+        : el // Vue 1
       if (!newValue) { return }
 
-      const bagName = vnode
-        ? vnode.data.attrs.bag  // Vue 2
-        : this.params.bag // Vue 1
-      if (bagName !== undefined && bagName.length !== 0) {
-        name = bagName
-      }
-      const bag = service.find(name)
-      drake = bag.drake
+      const {container, name} = getBindInfo.call(this, isVue2, el, vnode)
+      const drake = service.getDrake(name)
       if (!drake.models) {
         drake.models = []
       }
 
-      if (!vnode) {
-        container = this.el // Vue 1
-      }
       let modelContainer = service.findModelContainerByContainer(container, drake)
 
       if (modelContainer) {
-        modelContainer.model = newValue
+        modelContainer.model = newValue.slice()
       } else {
         drake.models.push({
-          model: newValue,
-          container: container
+          model: newValue.slice(),
+          container: container,
+          expression: binding.expression
         })
       }
     },
 
-    unbind (container, binding, vnode) {
-      let unbindBagName = 'globalBag'
-      const bagName = vnode
-        ? vnode.data.attrs.bag // Vue 2
-        : this.params.bag // Vue 1
-      if (bagName !== undefined && bagName.length !== 0) {
-        unbindBagName = bagName
-      }
-      var drake = service.find(unbindBagName).drake
+    unbind (el, binding, vnode) {
+      const {container, name} = getBindInfo.call(this, isVue2, el, vnode)
+
+      const drake = service.getDrake(name)
       if (!drake) { return }
-      var containerIndex = drake.containers.indexOf(container)
+      const containerIndex = drake.containers.indexOf(container)
       if (containerIndex > -1) {
         drake.containers.splice(containerIndex, 1)
       }
       if (drake.containers.length === 0) {
-        service.destroy(unbindBagName)
+        service.destroy(name)
       }
     }
 
   })
 }
 
+function getBindInfo (isVue2, el, vnode) {
+  let bagName = 'globalBag'
+  let name = 'globalBag'
+  let container
+  if (isVue2) { // Vue 2
+    bagName = vnode.data.attrs.bag
+    container = el
+  } else { // Vue 1
+    bagName = this.params.bag
+    container = this.el
+  }
+  if (bagName !== undefined && bagName.length !== 0) {
+    name = bagName
+  }
+  return {
+    container,
+    name
+  }
+}
