@@ -6,9 +6,9 @@ Vue wrapper for [`dragula`][1].
 ## Install
 #### CommonJS
 
-- Available through npm as `vue-dragula`.
+- Available through npm as `vue-dragula`, add `@next` to install the pre-release version.
   ``` bash
-  npm install vue-dragula
+  npm install vue-dragula@next
   ```
 
   ``` js
@@ -39,7 +39,7 @@ template:
 
 ## APIs
 
-You can access them from `Vue.vueDragula`
+You can access them from `Vue.dragula` or `this.$dragula`
 
 ### `options(name, options)`
 
@@ -49,7 +49,7 @@ Set dragula options, refer to: https://github.com/bevacqua/dragula#optionscontai
 new Vue({
   ...
   created: function () {
-    Vue.vueDragula.options('my-bag', {
+    Vue.dragula.options('my-bag', {
       direction: 'vertical'
     })
   }
@@ -68,7 +68,7 @@ For drake events, refer to: https://github.com/bevacqua/dragula#drakeon-events
 ...
 new Vue({
   mounted: function () {
-    Vue.vueDragula.eventBus.$on('drop', function (args) {
+    Vue.dragula.eventBus.$on('drop', function (args) {
       console.log('drop: ' + args[0])
     })
   }
