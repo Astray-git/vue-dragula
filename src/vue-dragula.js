@@ -82,6 +82,9 @@ export default function (Vue) {
       const bagName = vnode
         ? vnode.data.attrs.bag // Vue 2
         : this.params.bag // Vue 1
+      if (!vnode) {
+        container = this.el // Vue 1
+      }
       if (bagName !== undefined && bagName.length !== 0) {
         unbindBagName = bagName
       }
