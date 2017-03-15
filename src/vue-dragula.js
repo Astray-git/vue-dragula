@@ -43,6 +43,39 @@ export default function (Vue) {
 
       service.handleModels(name, drake)
     },
+    
+    inserted (container, binding, vnode, oldVnode) {
+      const newValue = vnode
+        ? binding.value // Vue 2
+        : container // Vue 1
+      if (!newValue) { return }
+
+      const bagName = vnode
+        ? vnode.data.attrs.bag  // Vue 2
+        : this.params.bag // Vue 1
+      if (bagName !== undefined && bagName.length !== 0) {
+        name = bagName
+      }
+      const bag = service.find(name)
+      drake = bag.drake
+      if (!drake.models) {
+        drake.models = []
+      }
+
+      if (!vnode) {
+        container = this.el // Vue 1
+      }
+      let modelContainer = service.findModelContainerByContainer(container, drake)
+
+      if (modelContainer) {
+        modelContainer.model = newValue
+      } else {
+        drake.models.push({
+          model: newValue,
+          container: container
+        })
+      }
+    },
 
     update (container, binding, vnode, oldVnode) {
       const newValue = vnode
