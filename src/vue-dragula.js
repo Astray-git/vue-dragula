@@ -11,7 +11,7 @@ export default function (Vue) {
   let name = 'globalBag'
   let drake
 
-  Vue.vueDragula = {
+  Vue.prototype.vueDragula = {
     options: service.setOptions.bind(service),
     find: service.find.bind(service),
     eventBus: service.eventBus
