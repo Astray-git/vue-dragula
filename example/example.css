@@ -1,22 +1,27 @@
 body {
-  background-color: #942A57;
+  background-color: #942a57;
   margin: 0 auto;
   max-width: 760px;
 }
 
-html, body {
+html,
+body {
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   -webkit-box-sizing: inherit;
   -moz-box-sizing: inherit;
   box-sizing: inherit;
 }
 
-body, input, button {
+body,
+input,
+button {
   font-family: Georgia, Helvetica;
   font-size: 17px;
   color: #ecf0f1;
@@ -24,7 +29,7 @@ body, input, button {
 
 h1 {
   text-align: center;
-  background-color: #AC5C7E;
+  background-color: #ac5c7e;
   margin-top: 20px;
   margin-bottom: 0;
   padding: 10px;
@@ -32,7 +37,7 @@ h1 {
 
 h3 {
   background-color: rgba(255, 255, 255, 0.2);
-  border-bottom: 5px solid #A13462;
+  border-bottom: 5px solid #a13462;
   text-align: center;
   padding: 10px;
 }
@@ -92,7 +97,7 @@ input {
   outline: none;
   background-color: #ecf0f1;
   padding: 10px;
-  color: #942A57;
+  color: #942a57;
   border: 0;
   margin: 5px 0;
   display: block;
@@ -101,7 +106,7 @@ input {
 
 button {
   background-color: #ecf0f1;
-  color: #942A57;
+  color: #942a57;
   border: 0;
   padding: 18px 12px;
   margin-left: 6px;
@@ -176,7 +181,7 @@ button:hover {
 .container .scale-transition {
   overflow: hidden;
   height: 40px;
-  transition: height .2s;
+  transition: height 0.2s;
 }
 .container .scale-enter {
   height: 0px;

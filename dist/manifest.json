@@ -1,0 +1,7 @@
+{
+  "src/index.js": {
+    "file": "vue-dragula.umd.js",
+    "src": "src/index.js",
+    "isEntry": true
+  }
+}
